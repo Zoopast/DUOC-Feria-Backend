@@ -12,6 +12,6 @@ def get_cursor():
     print("Successfully connected to Oracle Database")
 
     cursor = connection.cursor()
-    return cursor
+    return cursor, connection
   except oracledb.Error as error:
     print("Error while connecting to Oracle", error)
