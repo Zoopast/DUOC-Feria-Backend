@@ -1,7 +1,10 @@
 from pydantic import BaseModel
 
 class Usuario(BaseModel):
-    id: int
+    id: int | None
     nombre: str
-    rol_id: int
+    email: str
 
+class UsuarioInDB(Usuario):
+    password: str | None
+    salt: str | None
