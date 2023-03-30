@@ -8,6 +8,7 @@ class Settings(BaseSettings):
   secret_key: str
   access_token_expire_days: int
   algorithm: str
+  db_user: str
 
   class Config:
     env_file = ".env"

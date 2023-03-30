@@ -5,7 +5,7 @@ from configs import config
 def get_cursor():
   try:
     connection = oracledb.connect(
-      user="Admin",
+      user=config.settings.db_user,
       password=config.settings.db_password,
       dsn=f"{config.settings.db_public_ip}/{config.settings.db_sid}")
 
