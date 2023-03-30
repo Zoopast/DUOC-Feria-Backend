@@ -36,6 +36,4 @@ app.include_router(ventas.router)
 
 @app.get("/")
 async def root():
-    cursor = get_cursor()
-    cursor.execute("SELECT * FROM CLIENTES_LOCALES")
-    return cursor.fetchall()
+    return {"message": "Hello World"}

@@ -1,5 +1,4 @@
 import oracledb
-import os
 from configs import config
 
 def get_cursor():
