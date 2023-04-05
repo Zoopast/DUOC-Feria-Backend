@@ -1,12 +1,14 @@
 import oracledb
 from configs import config
 
+settings = config.Settings()
+
 def get_cursor():
   try:
     connection = oracledb.connect(
-      user=config.settings.db_user,
-      password=config.settings.db_password,
-      dsn=f"{config.settings.db_public_ip}/{config.settings.db_sid}")
+      user="Admin",
+      password="DuocAdmin@2023",
+      dsn=f"13.72.86.125/oratest2")
 
     print("Successfully connected to Oracle Database")
 
