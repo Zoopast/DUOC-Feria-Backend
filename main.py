@@ -1,9 +1,6 @@
 from fastapi import FastAPI
-from configs import config
 from routers import roles, users, bodegas, clientes, contratos, costos, embarque, empresas, ganancias, productoras, productos, seguros, ventas
 from fastapi.middleware.cors import CORSMiddleware
-
-from db.client import get_cursor
 
 app = FastAPI()
 
