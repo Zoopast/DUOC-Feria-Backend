@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordRequestForm
 from db.models.token import Token
 from configs import config
-from db.models.user import Usuario, UsuarioInDB
+from db.models.user import Usuario
 from db.client import get_cursor
 import bcrypt
 from auth.auth_bearer import JWTBearer
@@ -30,18 +30,23 @@ async def obtener_usuario(id: int):
 
 # create user
 @router.post("/sign_up", status_code=status.HTTP_201_CREATED)
-async def sign_up(user: UsuarioInDB):
+async def sign_up(user: Usuario):
     if type(get_user_by_email(user.email)) == Usuario:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
     user_dict = dict(user)
-    del user_dict["id"]
     user_dict["salt"] = bcrypt.gensalt()
-    user_dict["password"] = bcrypt.hashpw(user_dict["password"].encode("utf-8"), user_dict["salt"])
-    con.execute("INSERT INTO usuario (nombre, email, password, salt) VALUES (:nombre, :email, :password, :salt)", user_dict)
+    user_dict["contrasena"] = bcrypt.hashpw(user_dict["contrasena"].encode("utf-8"), user_dict["salt"])
+    del user_dict['id_usuario']
+    del user_dict['id_productor']
+    del user_dict['id_comerciante']
+    con.execute("""
+                INSERT INTO USUARIOS(rut, nombre_usuario, apellidos_usuario, email, contrasena, salt, rol) 
+                VALUES (:rut, :nombre_usuario, :apellidos_usuario, :email, :contrasena, :salt, :rol)"""
+                , user_dict)
     connection.commit()
-    con.execute("SELECT * FROM usuario WHERE email = :email", {"email": user.email})
-    result = con.fetchone()
+    con.execute("SELECT * FROM USUARIOS WHERE email = :email", {"email": user.email})
+    con.fetchone()
     return { "status": status.HTTP_201_CREATED, "message": "User created"}
 
 # sign in

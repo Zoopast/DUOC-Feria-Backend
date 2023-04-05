@@ -1,9 +1,9 @@
 from fastapi import Depends, HTTPException, status
-from db.schemas.user import user_schema, user_in_db_schema
+from db.schemas.user import user_schema
 from fastapi.security import OAuth2PasswordBearer
 from db.client import get_cursor
 from passlib.context import CryptContext
-from db.models.user import Usuario, UsuarioInDB
+from db.models.user import Usuario
 from datetime import datetime, timedelta
 from configs import config
 from jose import JWTError, jwt
@@ -21,16 +21,21 @@ def get_password_hash(password):
 
 def get_user(email:str):
     user = None
-    con.execute("SELECT * FROM usuario WHERE email = :email", {"email": email})
+    con.execute("SELECT * FROM USUARIOS WHERE email = :email", { "email": email })
     user = con.fetchone()
     if user:
         user_dict = {}
         user_dict["id"] = user[0]
+        user_dict["rut"] = user[1]
+        user_dict["nombre_usuario"] = user[2]
+        user_dict["apellidos_usuario"] = user[3]
         user_dict["email"] = user[2]
         user_dict["password"] = user[3]
-        user_dict["nombre"] = user[1]
         user_dict["salt"] = user[4]
-        return UsuarioInDB(**user_in_db_schema(user_dict))
+        user_dict["rol"] = user[5]
+        user_dict["id_productor"] = user[6]
+        user_dict["id_comerciante"] = user[7]
+        return Usuario(**user_schema(user_dict))
 
 def authenticate_user(email: str, password: str):
     user = get_user(email)
@@ -52,7 +57,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 def get_user_by_email(email: str):
     try:
-        user = con.execute("SELECT * FROM usuario WHERE email = :email", {"email": email})
+        user = con.execute("SELECT * FROM USUARIOS WHERE email = :email", {"email": email})
         return Usuario(**user)
     except:
         return { "error": "User not found" }
