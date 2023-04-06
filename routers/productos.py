@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from db.client import get_cursor
-from db.models.rol import Rol
+from db.models.producto import Producto
 
 router = APIRouter(
     prefix="/productos",
@@ -12,36 +12,34 @@ con, connection = get_cursor()
 
 @router.get("/")
 async def get_productos():
-    con.execute("SELECT * FROM rol")
+    con.execute("SELECT * FROM PRODUCTOS")
     result = con.fetchall()
-    print(result)
     if not result:
-      raise HTTPException(status_code=404, detail="Rol no encontrado")
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
     return [{"id": row[0], "nombre": row[1]} for row in result]
 
-@router.get("/{id}")
-async def get_producto(id: int):
-    con.execute("SELECT * FROM rol WHERE id = :id", {"id": id})
+@router.get("/{id_producto}")
+async def get_producto(id_producto: int):
+    con.execute("SELECT * FROM PRODUCTOS WHERE id = :id", {"id": id_producto})
     result = con.fetchone()
     if not result:
-      raise HTTPException(status_code=404, detail="Rol no encontrado")
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
     return {"id": result[0], "nombre": result[1]}
 
 @router.post("/")
-async def create_producto(rol: Rol):
-    con.execute("INSERT INTO rol (id, nombre) VALUES (:id, :nombre)", [rol.id, rol.nombre])
+async def create_producto(producto: Producto):
+    con.execute("INSERT INTO PRODUCTOS (id, nombre) VALUES (:id, :nombre)", [producto.id_producto, producto.nombre])
     connection.commit()
-    return {"message": "Rol creado correctamente"}
+    return {"message": "Producto creado correctamente"}
 
-@router.put("/{id}")
-async def update_producto(id: int, rol: Rol):
-    con.execute("UPDATE rol SET nombre = :nombre WHERE id = :id", {"nombre": rol.nombre, "id": id})
+@router.put("/{id_producto}")
+async def update_producto(id_producto: int, producto: Producto):
+    con.execute("UPDATE PRODUCTOS SET nombre = :nombre WHERE id = :id", {"nombre": producto.nombre, "id": id_producto})
     con.commit()
-    return {"message": "Rol actualizado correctamente"}
+    return {"message": "Producto actualizado correctamente"}
 
-@router.delete("/{id}")
-async def delete_producto(id: int):
-    con.execute("DELETE FROM rol WHERE id = :id", {"id": id})
+@router.delete("/{id_producto}")
+async def delete_producto(id_producto: int):
+    con.execute("DELETE FROM PRODUCTOS WHERE id = :id", {"id": id_producto})
     con.commit()
-    return {"message": "Rol eliminado correctamente"}
-
+    return {"message": "Producto eliminado correctamente"}
