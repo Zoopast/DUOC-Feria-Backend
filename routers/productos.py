@@ -28,7 +28,9 @@ async def get_producto(id_producto: int):
 
 @router.post("/")
 async def create_producto(producto: Producto):
-    con.execute("INSERT INTO PRODUCTOS (id, nombre) VALUES (:id, :nombre)", [producto.id_producto, producto.nombre])
+    con.execute("""INSERT INTO PRODUCTOS VALUES (:id, :nombre)
+                   VALUES (:nombre) 
+                """, )
     connection.commit()
     return {"message": "Producto creado correctamente"}
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from db.client import get_cursor
-from db.models.rol import Rol
+from db.models.seguro import Seguro
 
 router = APIRouter(
     prefix="/seguros",
@@ -12,36 +12,34 @@ con, connection = get_cursor()
 
 @router.get("/")
 async def get_seguros():
-    con.execute("SELECT * FROM rol")
+    con.execute("SELECT * FROM SEGUROS")
     result = con.fetchall()
-    print(result)
     if not result:
-      raise HTTPException(status_code=404, detail="Rol no encontrado")
+        raise HTTPException(status_code=404, detail="Seguro no encontrado")
     return [{"id": row[0], "nombre": row[1]} for row in result]
 
-@router.get("/{id}")
-async def get_seguro(id: int):
-    con.execute("SELECT * FROM rol WHERE id = :id", {"id": id})
+@router.get("/{id_seguro}")
+async def get_seguro(id_seguro: int):
+    con.execute("SELECT * FROM SEGUROS WHERE id = :id", {"id": id_seguro})
     result = con.fetchone()
     if not result:
-      raise HTTPException(status_code=404, detail="Rol no encontrado")
+        raise HTTPException(status_code=404, detail="Seguro no encontrado")
     return {"id": result[0], "nombre": result[1]}
 
 @router.post("/")
-async def create_seguro(rol: Rol):
-    con.execute("INSERT INTO rol (id, nombre) VALUES (:id, :nombre)", [rol.id, rol.nombre])
+async def create_seguro(seguro: Seguro):
+    con.execute("INSERT INTO SEGUROS (id, nombre) VALUES (:id, :nombre)", [seguro.id_seguro, seguro.nombre])
     connection.commit()
-    return {"message": "Rol creado correctamente"}
+    return {"message": "Seguro creado correctamente"}
 
-@router.put("/{id}")
-async def update_seguro(id: int, rol: Rol):
-    con.execute("UPDATE rol SET nombre = :nombre WHERE id = :id", {"nombre": rol.nombre, "id": id})
+@router.put("/{id_seguro}")
+async def update_seguro(id_seguro: int, seguro: Seguro):
+    con.execute("UPDATE SEGUROS SET nombre = :nombre WHERE id = :id", {"nombre": seguro.nombre, "id": id_seguro})
     con.commit()
-    return {"message": "Rol actualizado correctamente"}
+    return {"message": "Seguro actualizado correctamente"}
 
-@router.delete("/{id}")
-async def delete_seguro(id: int):
-    con.execute("DELETE FROM rol WHERE id = :id", {"id": id})
+@router.delete("/{id_seguro}")
+async def delete_seguro(id_seguro: int):
+    con.execute("DELETE FROM SEGUROS WHERE id = :id", {"id": id_seguro})
     con.commit()
-    return {"message": "Rol eliminado correctamente"}
-
+    return {"message": "Seguro eliminado correctamente"}
