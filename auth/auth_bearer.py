@@ -18,8 +18,8 @@ class JWTBearer(HTTPBearer):
         if not self.verify_jwt(credentials.credentials):
             raise HTTPException(status_code=403, detail='Invalid token or expired token.')
 
-        if not await self.isAdmin(credentials.credentials):
-            raise HTTPException(status_code=403, detail='You do not have the required permissions.')
+        #if not await self.isAdmin(credentials.credentials):
+        #    raise HTTPException(status_code=403, detail='You do not have the required permissions.')
 
         return credentials.credentials
       else:
@@ -39,9 +39,9 @@ class JWTBearer(HTTPBearer):
       return isTokenValid
 
     async def isAdmin(self, token: str):
-      user = cursor.execute("SELECT * FROM usuario WHERE id = :id", {"id": self.get_jwt_subject(token)})
+      user = cursor.execute("SELECT * FROM USUARIOS WHERE email = :email", {"email": self.get_jwt_subject(token)})
       user = user.fetchone()
-      return "admin" in user["roles"]
+      return "Admin" in user[7]
 
     def get_jwt_subject(self, token: str):
       try:
