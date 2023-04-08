@@ -79,3 +79,7 @@ async def eliminar_usuario(id: int):
         cur.execute("DELETE FROM usuario WHERE id = :id", {"id": id})
         con.commit()
         return {"message": "Usuario eliminado correctamente"}
+
+@router.get("/me")
+async def read_users_me(current_user: Usuario = Depends(JWTBearer())):
+    return current_user
