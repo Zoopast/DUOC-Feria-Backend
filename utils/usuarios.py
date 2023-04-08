@@ -23,25 +23,26 @@ def get_user(email:str):
     user = None
     con.execute("SELECT * FROM USUARIOS WHERE email = :email", { "email": email })
     user = con.fetchone()
+    print(user)
     if user:
         user_dict = {}
-        user_dict["id"] = user[0]
+        user_dict["id_usuario"] = user[0]
         user_dict["rut"] = user[1]
         user_dict["nombre_usuario"] = user[2]
-        user_dict["apellidos_usuario"] = user[3]
-        user_dict["email"] = user[2]
-        user_dict["password"] = user[3]
-        user_dict["salt"] = user[4]
-        user_dict["rol"] = user[5]
-        user_dict["id_productor"] = user[6]
-        user_dict["id_comerciante"] = user[7]
+        user_dict["apellido_usuario"] = user[3]
+        user_dict["contrasena"] = user[4]
+        user_dict["salt"] = user[5]
+        user_dict["email"] = user[6]
+        user_dict["rol"] = user[7]
+        user_dict["id_productor"] = user[8]
+        user_dict["id_comerciante"] = user[9]
         return Usuario(**user_schema(user_dict))
 
 def authenticate_user(email: str, password: str):
     user = get_user(email)
     if not user:
         return False
-    if not verify_password(password, user.password):
+    if not verify_password(password, user.contrasena):
         return False
     return user
 
