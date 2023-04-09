@@ -11,3 +11,13 @@ class Usuario(BaseModel):
     rol: str | None
     id_productor: int | None
     id_comerciante: int | None
+
+class UsuarioEnSesion(BaseModel):
+    id_usuario: int | None
+    rut: str
+    nombre_usuario: str
+    apellidos_usuario: str
+    email: str
+    rol: str | None
+    id_productor: int | None
+    id_comerciante: int | None

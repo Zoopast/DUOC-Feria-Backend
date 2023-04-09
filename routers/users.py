@@ -7,7 +7,7 @@ from db.models.user import Usuario
 from db.client import get_cursor
 import bcrypt
 from auth.auth_bearer import JWTBearer
-from utils.usuarios import authenticate_user, create_access_token, get_user_by_email
+from utils.usuarios import authenticate_user, create_access_token, get_user_by_email, get_current_user
 
 con, connection = get_cursor()
 
@@ -18,15 +18,35 @@ router = APIRouter(
 )
 
 
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def crear_usuario(user: Usuario):
+    if type(get_user_by_email(user.email)) == Usuario:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+
+    user_dict = dict(user)
+    user_dict["salt"] = bcrypt.gensalt()
+    user_dict["contrasena"] = bcrypt.hashpw(user_dict["contrasena"].encode("utf-8"), user_dict["salt"])
+    del user_dict['id_usuario']
+    del user_dict['id_productor']
+    del user_dict['id_comerciante']
+    con.execute("""
+                INSERT INTO USUARIOS(rut, nombre_usuario, apellidos_usuario, email, contrasena, salt, rol) 
+                VALUES (:rut, :nombre_usuario, :apellidos_usuario, :email, :contrasena, :salt, :rol)"""
+                , user_dict)
+    connection.commit()
+    con.execute("SELECT * FROM USUARIOS WHERE email = :email", {"email": user.email})
+    usuario = con.fetchone()
+    return { "status": status.HTTP_201_CREATED, "message": "User created", "user": usuario }
+
 # Rutas para operaciones CRUD
-@router.get("/usuario/{id}")
-async def obtener_usuario(id: int):
-    with con.cursor() as cur:
-        cur.execute("SELECT * FROM usuario WHERE id = :id", {"id": id})
-        result = cur.fetchone()
-        if not result:
-            raise HTTPException(status_code=404, detail="Usuario no encontrado")
-        return {"id": result[0], "nombre": result[1], "rol_id": result[2]}
+@router.get("/usuarios/{id_usuario}")
+async def obtener_usuario(id_usuario: int):
+    con.execute("SELECT * FROM USUARIOS WHERE id_usuario = :id_usuario", {"id_usuario": id_usuario})
+    result = con.fetchone()
+    if not result:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return {"id": result[0], "nombre": result[1], "rol_id": result[2]}
+
 
 # create user
 @router.post("/sign_up", status_code=status.HTTP_201_CREATED)
@@ -82,4 +102,4 @@ async def eliminar_usuario(id: int):
 
 @router.get("/me")
 async def read_users_me(current_user: Usuario = Depends(JWTBearer())):
-    return current_user
+    return await get_current_user(current_user)

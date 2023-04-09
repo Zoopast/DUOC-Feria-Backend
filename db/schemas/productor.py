@@ -1,9 +1,9 @@
-def productor_schema(productor: list) -> list:
+def productor_schema(productor: tuple) -> list:
     return {
-        "id_productor": productor["id_productor"],
-        "nombre": productor["nombre"],
-        "email": productor["email"],
-        "telefono": productor["telefono"],
-        "direccion": productor["direccion"],
-        "id_contrato": productor["id_contrato"]
+        "id_productor": productor[0],
+        "nombre": productor[1],
+        "email": productor[2],
+        "telefono": productor[3],
+        "direccion": productor[4],
+        "id_usuario": productor[5]
     }

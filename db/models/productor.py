@@ -6,4 +6,4 @@ class Productor(BaseModel):
     email: str
     telefono: str
     direccion: str
-    id_contrato: str | None
+    id_usuario: str | None

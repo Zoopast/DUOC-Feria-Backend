@@ -1,9 +1,9 @@
 from fastapi import Depends, HTTPException, status
-from db.schemas.user import user_schema
+from db.schemas.user import user_schema, user_profile_schema
 from fastapi.security import OAuth2PasswordBearer
 from db.client import get_cursor
 from passlib.context import CryptContext
-from db.models.user import Usuario
+from db.models.user import Usuario, UsuarioEnSesion
 from datetime import datetime, timedelta
 from configs import config
 from jose import JWTError, jwt
@@ -19,11 +19,10 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-def get_user(email:str):
+def get_user_with_password(email:str):
     user = None
     con.execute("SELECT * FROM USUARIOS WHERE email = :email", { "email": email })
     user = con.fetchone()
-    print(user)
     if user:
         user_dict = {}
         user_dict["id_usuario"] = user[0]
@@ -38,8 +37,24 @@ def get_user(email:str):
         user_dict["id_comerciante"] = user[9]
         return Usuario(**user_schema(user_dict))
 
+def get_user(email:str):
+    user = None
+    con.execute("SELECT * FROM USUARIOS WHERE email = :email", { "email": email })
+    user = con.fetchone()
+    if user:
+        user_dict = {}
+        user_dict["id_usuario"] = user[0]
+        user_dict["rut"] = user[1]
+        user_dict["nombre_usuario"] = user[2]
+        user_dict["apellido_usuario"] = user[3]
+        user_dict["email"] = user[6]
+        user_dict["rol"] = user[7]
+        user_dict["id_productor"] = user[8]
+        user_dict["id_comerciante"] = user[9]
+        return UsuarioEnSesion(**user_profile_schema(user_dict))
+
 def authenticate_user(email: str, password: str):
-    user = get_user(email)
+    user = get_user_with_password(email)
     if not user:
         return False
     if not verify_password(password, user.contrasena):
@@ -77,7 +92,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         token_data = TokenData(email=email)
     except JWTError:
         raise credentials_exception
-    user = get_user(username=token_data.email)
+    user = get_user(email=token_data.email)
     if user is None:
         raise credentials_exception
     return user
