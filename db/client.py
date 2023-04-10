@@ -6,9 +6,9 @@ settings = config.Settings()
 def get_cursor():
   try:
     connection = oracledb.connect(
-      user="Admin",
-      password="DuocAdmin@2023",
-      dsn=f"13.72.86.125/oratest2")
+      user=settings.db_user,
+      password=settings.db_password,
+      dsn=f"{settings.db_public_ip}/{settings.db_sid}")
 
     print("Successfully connected to Oracle Database")
 
