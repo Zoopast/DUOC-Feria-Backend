@@ -18,6 +18,13 @@ router = APIRouter(
 )
 
 
+# Rutas para operaciones CRUD
+@router.get("/")
+async def obtener_usuarios():
+    con.execute("SELECT * FROM USUARIOS")
+    result = con.fetchall()
+    return result
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def crear_usuario(user: Usuario):
     if type(get_user_by_email(user.email)) == Usuario:
@@ -86,19 +93,18 @@ async def sign_in(form_data: OAuth2PasswordRequestForm = Depends()):
 
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.put("/usuario/{id}")
+@router.put("/usuarios/{id}")
 async def actualizar_usuario(id: int, usuario: Usuario):
     with con.cursor() as cur:
         cur.execute("UPDATE usuario SET nombre = :nombre, rol_id = :rol_id WHERE id = :id", {"nombre": usuario.nombre, "rol_id": usuario.rol_id, "id": id})
         connection.commit()
         return {"message": "Usuario actualizado correctamente"}
 
-@router.delete("/usuario/{id}")
+@router.delete("/{id}")
 async def eliminar_usuario(id: int):
-    with con.cursor() as cur:
-        cur.execute("DELETE FROM usuario WHERE id = :id", {"id": id})
-        con.commit()
-        return {"message": "Usuario eliminado correctamente"}
+    con.execute("DELETE FROM USUARIOS WHERE id_usuario = :id_usuario", {"id_usuario": id})
+    connection.commit()
+    return {"message": "Usuario eliminado correctamente"}
 
 @router.get("/me")
 async def read_users_me(current_user: Usuario = Depends(JWTBearer())):

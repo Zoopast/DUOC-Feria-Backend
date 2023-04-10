@@ -28,10 +28,24 @@ async def obtener_productor(id_productor: int):
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def crear_productor(productor: Productor):
-  print(productor)
   con.execute("""
     INSERT INTO PRODUCTORES(nombre, email, telefono, direccion, id_usuario) 
     VALUES (:nombre, :email, :telefono, :direccion, :id_usuario)"""
     , {"nombre": productor.nombre, "email": productor.email, "telefono": productor.telefono, "direccion": productor.direccion, "id_usuario": productor.id_usuario})
   connection.commit()
   return { "status": status.HTTP_201_CREATED, "message": "Productor creado"}
+
+@router.put("/{id_productor}")
+async def actualizar_productor(id_productor: int, productor: Productor):
+  con.execute("""
+    UPDATE PRODUCTORES SET nombre = :nombre, email = :email, telefono = :telefono, direccion = :direccion, id_usuario = :id_usuario
+    WHERE id_productor = :id_productor
+  """, {"id_productor": id_productor, "nombre": productor.nombre, "email": productor.email, "telefono": productor.telefono, "direccion": productor.direccion, "id_usuario": productor.id_usuario})
+  connection.commit()
+  return { "status": status.HTTP_200_OK, "message": "Productor actualizado"}
+
+@router.delete("/{id_productor}")
+async def eliminar_productor(id_productor: int):
+  con.execute("DELETE FROM PRODUCTORES WHERE id_productor = :id_productor", {"id_productor": id_productor})
+  connection.commit()
+  return { "status": status.HTTP_200_OK, "message": "Productor eliminado"}
