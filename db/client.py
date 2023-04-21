@@ -1,8 +1,10 @@
 import oracledb
 from configs.config import get_settings
+from functools import lru_cache
 
 settings = get_settings()
 
+@lru_cache()
 def get_cursor():
   try:
     connection = oracledb.connect(
@@ -16,3 +18,4 @@ def get_cursor():
     return cursor, connection
   except oracledb.Error as error:
     print("Error while connecting to Oracle", error)
+

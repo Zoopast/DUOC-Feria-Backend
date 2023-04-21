@@ -18,9 +18,6 @@ class JWTBearer(HTTPBearer):
         if not self.verify_jwt(credentials.credentials):
             raise HTTPException(status_code=403, detail='Invalid token or expired token.')
 
-        #if not await self.isAdmin(credentials.credentials):
-        #    raise HTTPException(status_code=403, detail='You do not have the required permissions.')
-
         return credentials.credentials
       else:
          raise HTTPException(status_code=403, detail='Invalid authorization code.')
