@@ -1,6 +1,8 @@
 from jose import jwt
-from configs.config import settings
+from configs.config import get_settings
 import time
+
+settings = get_settings()
 
 def decodeJWT(token: str) -> dict:
   try:

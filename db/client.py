@@ -1,7 +1,7 @@
 import oracledb
-from configs import config
+from configs.config import get_settings
 
-settings = config.Settings()
+settings = get_settings()
 
 def get_cursor():
   try:

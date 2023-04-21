@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordRequestForm
 from db.models.token import Token
-from configs import config
+from configs.config import get_settings
 from db.models.user import Usuario
 from db.client import get_cursor
 import bcrypt
@@ -10,6 +10,8 @@ from auth.auth_bearer import JWTBearer
 from utils.usuarios import authenticate_user, create_access_token, get_user_by_email, get_current_user
 
 con, connection = get_cursor()
+settings = get_settings()
+
 
 router = APIRouter(
     prefix="/usuarios",
@@ -86,7 +88,7 @@ async def sign_in(form_data: OAuth2PasswordRequestForm = Depends()):
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"}
         )
-    access_token_expires = timedelta(days=config.settings.access_token_expire_days)
+    access_token_expires = timedelta(days = settings.access_token_expire_days)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )

@@ -5,13 +5,14 @@ from db.client import get_cursor
 from passlib.context import CryptContext
 from db.models.user import Usuario, UsuarioEnSesion
 from datetime import datetime, timedelta
-from configs import config
+from configs.config import get_settings
 from jose import JWTError, jwt
 from db.models.token import TokenData
 
 con, connection = get_cursor()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+settings = get_settings()
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, bytes.fromhex(hashed_password))
@@ -68,7 +69,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, config.settings.secret_key, algorithm=config.settings.algorithm)
+    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm = settings.algorithm)
     return encoded_jwt
 
 def get_user_by_email(email: str):
@@ -85,7 +86,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"}
     )
     try:
-        payload = jwt.decode(token, config.settings.secret_key, algorithms=[config.settings.algorithm])
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
