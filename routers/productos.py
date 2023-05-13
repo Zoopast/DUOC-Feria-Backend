@@ -28,15 +28,20 @@ async def get_producto(id_producto: int):
 
 @router.post("/")
 async def create_producto(producto: Producto):
-    con.execute("""INSERT INTO PRODUCTOS VALUES (:id, :nombre)
-                   VALUES (:nombre) 
-                """, )
+    con.execute("""INSERT INTO PRODUCTOS VALUES (:id_productor, nombre, tipo, imagen, calidad, cantidad, precio)""", 
+                    {"id_productor": producto.id_productor, 
+                     "nombre": producto.nombre, 
+                     "tipo": producto.tipo, 
+                     "imagen": producto.imagen, 
+                     "calidad": producto.calidad, 
+                     "cantidad": producto.cantidad, 
+                     "precio": producto.precio})
     connection.commit()
     return {"message": "Producto creado correctamente"}
 
 @router.put("/{id_producto}")
 async def update_producto(id_producto: int, producto: Producto):
-    con.execute("UPDATE PRODUCTOS SET nombre = :nombre WHERE id = :id", {"nombre": producto.nombre, "id": id_producto})
+    con.execute("""UPDATE PRODUCTOS SET nombre = :nombre WHERE id = :id""", {"nombre": producto.nombre, "id": id_producto})
     con.commit()
     return {"message": "Producto actualizado correctamente"}
 

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 class Producto(BaseModel):
-    id_producto: str
+    id_producto: str | None
     id_productor: str
     nombre: str
     tipo: str
