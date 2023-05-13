@@ -16,7 +16,7 @@ async def get_productos():
     result = con.fetchall()
     if not result:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
-    return [{"id": row[0], "nombre": row[1]} for row in result]
+    return [{"id": row[0], "id_productor": row[1], "nombre": row[2], "tipo": row[3], "imagen": row[4], "calidad": row[5], "cantidad": row[6], "precio": row[7]} for row in result]
 
 @router.get("/{id_producto}")
 async def get_producto(id_producto: int):
@@ -28,14 +28,12 @@ async def get_producto(id_producto: int):
 
 @router.post("/")
 async def create_producto(producto: Producto):
-    con.execute("""INSERT INTO PRODUCTOS VALUES (:id_productor, nombre, tipo, imagen, calidad, cantidad, precio)""", 
-                    {"id_productor": producto.id_productor, 
-                     "nombre": producto.nombre, 
-                     "tipo": producto.tipo, 
-                     "imagen": producto.imagen, 
-                     "calidad": producto.calidad, 
-                     "cantidad": producto.cantidad, 
-                     "precio": producto.precio})
+    producto_dict = dict(producto)
+    del producto_dict['id_producto']
+    print(producto_dict)
+    con.execute("""INSERT INTO PRODUCTOS (id_productor, nombre, tipo, imagen, calidad, cantidad, precio) 
+                   VALUES (:id_productor, :nombre, :tipo, :imagen, :calidad, :cantidad, :precio)""", 
+                producto_dict)
     connection.commit()
     return {"message": "Producto creado correctamente"}
 
