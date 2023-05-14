@@ -9,8 +9,7 @@ class Usuario(BaseModel):
     contrasena: str
     salt: str | None
     rol: str | None
-    id_productor: int | None
-    id_comerciante: int | None
+    activo: bool | None
 
 class UsuarioEnSesion(BaseModel):
     id_usuario: int | None
@@ -19,5 +18,3 @@ class UsuarioEnSesion(BaseModel):
     apellidos_usuario: str
     email: str
     rol: str | None
-    id_productor: int | None
-    id_comerciante: int | None

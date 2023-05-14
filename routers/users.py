@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from db.models.token import Token
 from configs.config import get_settings
 from db.models.user import Usuario
+from db.schemas.user import user_tuple_to_dict
 from db.client import get_cursor
 import bcrypt
 from auth.auth_bearer import JWTBearer
@@ -25,7 +26,7 @@ router = APIRouter(
 async def obtener_usuarios():
     con.execute("SELECT * FROM USUARIOS")
     result = con.fetchall()
-    return result
+    return [user_tuple_to_dict(user) for user in result]
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def crear_usuario(user: Usuario):
@@ -36,8 +37,7 @@ async def crear_usuario(user: Usuario):
     user_dict["salt"] = bcrypt.gensalt()
     user_dict["contrasena"] = bcrypt.hashpw(user_dict["contrasena"].encode("utf-8"), user_dict["salt"])
     del user_dict['id_usuario']
-    del user_dict['id_productor']
-    del user_dict['id_comerciante']
+
     con.execute("""
                 INSERT INTO USUARIOS(rut, nombre_usuario, apellidos_usuario, email, contrasena, salt, rol) 
                 VALUES (:rut, :nombre_usuario, :apellidos_usuario, :email, :contrasena, :salt, :rol)"""
@@ -67,11 +67,11 @@ async def sign_up(user: Usuario):
     user_dict["salt"] = bcrypt.gensalt()
     user_dict["contrasena"] = bcrypt.hashpw(user_dict["contrasena"].encode("utf-8"), user_dict["salt"])
     del user_dict['id_usuario']
-    del user_dict['id_productor']
-    del user_dict['id_comerciante']
+    user_dict['activo'] = 1
+    
     con.execute("""
-                INSERT INTO USUARIOS(rut, nombre_usuario, apellidos_usuario, email, contrasena, salt, rol) 
-                VALUES (:rut, :nombre_usuario, :apellidos_usuario, :email, :contrasena, :salt, :rol)"""
+                INSERT INTO USUARIOS(rut, nombre_usuario, apellidos_usuario, email, contrasena, salt, rol, activo) 
+                VALUES (:rut, :nombre_usuario, :apellidos_usuario, :email, :contrasena, :salt, :rol, :activo)"""
                 , user_dict)
     connection.commit()
     con.execute("SELECT * FROM USUARIOS WHERE email = :email", {"email": user.email})
@@ -111,3 +111,9 @@ async def eliminar_usuario(id: int):
 @router.get("/me")
 async def read_users_me(current_user: Usuario = Depends(JWTBearer())):
     return await get_current_user(current_user)
+
+@router.get("/roles/{rol}")
+async def get_users_by_role(rol: str):
+    con.execute("SELECT * FROM USUARIOS WHERE rol = :rol", {"rol": rol})
+    result = con.fetchall()
+    return [user_tuple_to_dict(user) for user in result]
