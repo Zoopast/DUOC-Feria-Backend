@@ -26,3 +26,4 @@ uvicorn==0.21.1
 uvloop==0.17.0
 watchfiles==0.19.0
 websockets==10.4
+cx-Oracle==8.3.0
