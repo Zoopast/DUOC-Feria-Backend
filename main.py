@@ -1,12 +1,13 @@
 from fastapi import FastAPI
-from routers import users, productos, seguros, productores, comerciantes
+from routers import users, productos, seguros, productores, comerciantes, requerimientos
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 origins = [
     "http://localhost:5173",
-    "http://localhost:4200"
+    "http://localhost:4200",
+    "*"
 ]
 
 app.add_middleware(
@@ -22,6 +23,7 @@ app.include_router(productos.router)
 app.include_router(seguros.router)
 app.include_router(productores.router)
 app.include_router(comerciantes.router)
+app.include_router(requerimientos.router)
 
 
 @app.get("/")
