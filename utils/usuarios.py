@@ -29,13 +29,12 @@ def get_user_with_password(email:str):
         user_dict["id_usuario"] = user[0]
         user_dict["rut"] = user[1]
         user_dict["nombre_usuario"] = user[2]
-        user_dict["apellido_usuario"] = user[3]
+        user_dict["apellidos_usuario"] = user[3]
         user_dict["contrasena"] = user[4]
         user_dict["salt"] = user[5]
         user_dict["email"] = user[6]
         user_dict["rol"] = user[7]
-        user_dict["id_productor"] = user[8]
-        user_dict["id_comerciante"] = user[9]
+        user_dict["activo"] = user[8]
         return Usuario(**user_schema(user_dict))
 
 def get_user(email:str):
