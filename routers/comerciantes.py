@@ -23,14 +23,13 @@ async def obtener_comerciante(id_comerciante: int):
   result = con.fetchone()
   if not result:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comerciante no encontrado")
-  
+
   return comerciante_schema(result)
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def crear_comerciante(comerciante: Comerciante):
-  print(comerciante)
   con.execute("""
-    INSERT INTO COMERCIANTES(nombre, email, telefono, direccion, id_usuario) 
+    INSERT INTO COMERCIANTES(nombre, email, telefono, direccion, id_usuario)
     VALUES (:nombre, :email, :telefono, :direccion, :id_usuario)"""
     , {"nombre": comerciante.nombre, "email": comerciante.email, "telefono": comerciante.telefono, "direccion": comerciante.direccion, "id_usuario": comerciante.id_usuario})
   connection.commit()
