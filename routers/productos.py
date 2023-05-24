@@ -30,7 +30,6 @@ async def get_producto(id_producto: int):
 async def create_producto(producto: Producto):
     producto_dict = dict(producto)
     del producto_dict['id_producto']
-    print(producto_dict)
     con.execute("""INSERT INTO PRODUCTOS (id_productor, nombre, tipo, imagen, calidad, cantidad, precio) 
                    VALUES (:id_productor, :nombre, :tipo, :imagen, :calidad, :cantidad, :precio)""", 
                 producto_dict)
