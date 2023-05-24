@@ -3,7 +3,7 @@ def user_schema(user: dict) -> dict:
         "id_usuario": user["id_usuario"],
         "rut": user["rut"],
         "nombre_usuario": user["nombre_usuario"],
-        "apellidos_usuario": user["apellido_usuario"],
+        "apellidos_usuario": user["apellidos_usuario"],
         "email": user["email"],
         "contrasena": user["contrasena"],
         "salt": user["salt"],
@@ -21,7 +21,7 @@ def user_profile_schema(user: dict) -> dict:
         "rol": user["rol"],
         "activo": user["activo"]
     }
-    
+
 def user_tuple_to_dict(user: tuple):
     return {
         "id_usuario": user[0],
