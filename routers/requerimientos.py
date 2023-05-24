@@ -20,7 +20,6 @@ async def get_usuario_requerimiento(id_usuario: int):
     return user_tuple_to_dict(result)
 
 async def get_produtos_requerimiento(id_requerimiento: int):
-    print(id_requerimiento)
     cursor.execute("SELECT * FROM PRODUCTO_REQUERIMIENTO WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
     result = cursor.fetchall()
     connection.commit()
