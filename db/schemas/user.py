@@ -16,7 +16,7 @@ def user_profile_schema(user: dict) -> dict:
         "id_usuario": user["id_usuario"],
         "rut": user["rut"],
         "nombre_usuario": user["nombre_usuario"],
-        "apellidos_usuario": user["apellido_usuario"],
+        "apellidos_usuario": user["apellidos_usuario"],
         "email": user["email"],
         "rol": user["rol"],
         "activo": user["activo"]
