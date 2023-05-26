@@ -5,6 +5,7 @@ from db.models.requerimiento import Requerimiento
 from db.schemas.requerimiento import requerimiento_tuple_to_dict
 from db.schemas.user import user_tuple_to_dict
 from db.schemas.producto_requerimiento import producto_tuple_to_dict
+from datetime import datetime
 router = APIRouter(
     prefix="/requerimientos",
     tags=["requerimientos"],
@@ -45,8 +46,12 @@ async def obtener_requerimiento(id_requerimiento: int):
 async def crear_requerimiento(requerimiento: Requerimiento):
     nuevo_requerimiento = requerimiento.dict()
     nuevo_requerimiento["estado"] = "enviado"
+    nuevo_requerimiento["fecha_inicio"] = datetime.strptime(nuevo_requerimiento["fecha_inicio"], "%d/%m/%Y").strftime("%d-%b-%Y")
+    nuevo_requerimiento["fecha_fin"] = datetime.strptime(nuevo_requerimiento["fecha_fin"], "%d/%m/%Y").strftime("%d-%b-%Y")
+    
     del nuevo_requerimiento["id_requerimiento"]
     del nuevo_requerimiento["productos"]
+
 
     insert_query = """
         INSERT INTO REQUERIMIENTOS (id_usuario, fecha_inicio, fecha_fin, estado, calidad)
