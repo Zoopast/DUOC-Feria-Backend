@@ -115,7 +115,7 @@ async def actualizar_estado_requerimiento(id_requerimiento: int, requerimiento: 
 
 @router.get("/requisitos_activos")
 async def obtener_requisitos_activos():
-    cursor.execute("SELECT * FROM REQUERIMIENTOS WHERE estado = 'en curso'")
+    cursor.execute("SELECT * FROM REQUERIMIENTOS WHERE estado = 'activo'")
     result = cursor.fetchall()
     connection.commit()
     return [requerimiento_tuple_to_dict(requerimiento, await get_produtos_requerimiento(requerimiento[0]), await get_usuario_requerimiento(requerimiento[4])) for requerimiento in result]

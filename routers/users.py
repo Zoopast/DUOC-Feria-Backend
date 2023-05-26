@@ -9,6 +9,7 @@ from db.client import get_cursor
 import bcrypt
 from auth.auth_bearer import JWTBearer
 from utils.usuarios import authenticate_user, create_access_token, get_user_by_email, get_current_user
+from db.schemas.requerimiento import requerimiento_tuple_to_dict
 
 con, connection = get_cursor()
 settings = get_settings()
@@ -117,3 +118,9 @@ async def get_users_by_role(rol: str):
     con.execute("SELECT * FROM USUARIOS WHERE rol = :rol", {"rol": rol})
     result = con.fetchall()
     return [user_tuple_to_dict(user) for user in result]
+
+@router.get("/me/requerimientos")
+async def get_requerimientos_by_user(current_user: Usuario = Depends(JWTBearer())):
+    con.execute("SELECT * FROM REQUERIMIENTOS WHERE id_usuario = :id_usuario", {"id_usuario": current_user.id_usuario})
+    result = con.fetchall()
+    return [requerimiento_tuple_to_dict(user) for user in result]

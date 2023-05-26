@@ -11,6 +11,6 @@ class Requerimiento(BaseModel):
     productos: list[object] | None
 
     def check_estado(self):
-        estados = ["enviado", "aprobado", "rechazado", "en proceso", "finalizado"]
+        estados = ["enviado", "activo", "rechazado", "en proceso", "finalizado"]
         if self.estado not in estados:
             raise ValueError("Estado inválido")
