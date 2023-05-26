@@ -113,8 +113,8 @@ async def actualizar_estado_requerimiento(id_requerimiento: int, requerimiento: 
 
     return {"message": "Estado del requerimiento actualizado exitosamente"}
 
-@router.get("/activos")
-async def obtener_requisitos_activos():
+@router.get("/activos/")
+async def obtener_requerimientos_activos():
     cursor.execute("SELECT * FROM REQUERIMIENTOS WHERE estado = 'activo'")
     result = cursor.fetchall()
     connection.commit()
