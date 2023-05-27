@@ -7,6 +7,7 @@ from db.schemas.requerimiento import requerimiento_tuple_to_dict
 from datetime import datetime
 from db.schemas.producto_requerimiento import producto_tuple_to_dict
 from db.schemas.oferta_transporte import oferta_tuple_to_dict
+from db.models.oferta_transporte import OfertaTransporte
 router = APIRouter(
     prefix="/subastas",
     tags=["subastas"],
@@ -93,3 +94,20 @@ async def finalizar_subasta(id_subasta: int, id_transportista: int):
     cursor.execute(update_requerimiento_query, id_requerimiento=id_requerimiento)
 
     return {"message": "Subasta finalizada"}
+
+
+@router.post("/ofertas/hacer_oferta/")
+async def hacer_oferta(oferta_transporte: OfertaTransporte):
+    oferta_dict = oferta_transporte.dict()
+    oferta_dict["fecha_recoleccion"] = datetime.strptime(oferta_dict["fecha_recoleccion"], "%d/%m/%Y").strftime("%d-%b-%Y")
+    oferta_dict["fecha_entrega"] = datetime.strptime(oferta_dict["fecha_entrega"], "%d/%m/%Y").strftime("%d-%b-%Y")
+
+    del oferta_dict["id_oferta_transporte"]
+    insert_query = """
+        INSERT INTO OFERTA_TRANSPORTE (id_subasta, id_transportista, precio, fecha_recoleccion, fecha_entrega) 
+        VALUES (:id_subasta, :id_transportista, :precio, :fecha_recoleccion, :fecha_entrega)
+    """
+    cursor.execute(insert_query, 
+                   oferta_dict)
+    connection.commit()
+    return {"message": "Oferta realizada"}
