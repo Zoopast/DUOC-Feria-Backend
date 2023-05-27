@@ -8,3 +8,13 @@ def requerimiento_tuple_to_dict(requerimiento: tuple, productos: list = [], usua
 				"estado": requerimiento[5],
 				"productos": productos,
 		}
+
+def requerimiento_oferta_tuple_to_dict(oferta: tuple):
+    return {
+        "id_requerimiento_oferta": oferta[0],
+        "id_requerimiento": oferta[1],
+        "id_producto_requerimiento": oferta[2],
+        "id_productor": oferta[3],
+        "cantidad": int(oferta[4]),
+        "precio": int(oferta[5]),
+    }

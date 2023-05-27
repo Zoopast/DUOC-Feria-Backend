@@ -1,11 +1,14 @@
 from fastapi import APIRouter, HTTPException, status
 from db.client import get_cursor
 import cx_Oracle
+from typing import List
 from db.models.requerimiento import Requerimiento
-from db.schemas.requerimiento import requerimiento_tuple_to_dict
+from db.models.requerimiento_oferta import RequerimientoOferta
+from db.schemas.requerimiento import requerimiento_tuple_to_dict, requerimiento_oferta_tuple_to_dict
 from db.schemas.user import user_tuple_to_dict
 from db.schemas.producto_requerimiento import producto_tuple_to_dict
 from datetime import datetime
+
 router = APIRouter(
     prefix="/requerimientos",
     tags=["requerimientos"],
@@ -41,6 +44,15 @@ async def obtener_requerimiento(id_requerimiento: int):
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
     connection.commit()
     return requerimiento_tuple_to_dict(result, await get_produtos_requerimiento(result[0]), await get_usuario_requerimiento(result[4]))
+
+@router.get("/{id_requerimiento}/ofertas/")
+async def obtener_requerimiento(id_requerimiento: int):
+    cursor.execute("SELECT * FROM REQUERIMIENTO_OFERTA WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
+    result = cursor.fetchall()
+    if not result:
+        raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
+    connection.commit()
+    return [requerimiento_oferta_tuple_to_dict(oferta) for oferta in result]
 
 @router.post("/")
 async def crear_requerimiento(requerimiento: Requerimiento):
@@ -119,3 +131,23 @@ async def obtener_requerimientos_activos():
     result = cursor.fetchall()
     connection.commit()
     return [requerimiento_tuple_to_dict(requerimiento, await get_produtos_requerimiento(requerimiento[0]), await get_usuario_requerimiento(requerimiento[4])) for requerimiento in result]
+
+@router.post("/productos/oferta/")
+async def hacer_oferta(ofertas: List[RequerimientoOferta]):
+
+    for oferta in ofertas:
+        nueva_oferta = oferta.dict()
+        
+        del nueva_oferta["id_requerimiento_oferta"]
+
+        insert_query = """
+            INSERT INTO REQUERIMIENTO_OFERTA (id_requerimiento, id_producto_requerimiento, id_productor, cantidad, precio)
+            VALUES (:id_requerimiento, :id_producto_requerimiento, :id_productor, :cantidad, :precio)
+        """
+
+        cursor, connection = get_cursor()
+        cursor.execute(insert_query, **nueva_oferta)
+
+        connection.commit()
+
+        return {"message": "Oferta realizada exitosamente"}
