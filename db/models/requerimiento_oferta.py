@@ -7,3 +7,4 @@ class RequerimientoOferta(BaseModel):
 	id_productor: int
 	cantidad: int
 	precio: int
+	aceptado: bool | None

@@ -151,3 +151,16 @@ async def hacer_oferta(ofertas: List[RequerimientoOferta]):
         connection.commit()
 
         return {"message": "Oferta realizada exitosamente"}
+    
+@router.put("/{id_requerimiento}/ofertas/aceptar/")
+async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
+
+    for id_oferta in ofertas:
+        update_query = """
+        UPDATE REQUERIMIENTO_OFERTA SET aceptado = 1 WHERE id_requerimiento_oferta = :id_requerimiento_oferta
+        """
+        cursor.execute(update_query, id_requerimiento_oferta=id_oferta)
+
+    connection.commit()
+
+    return {"message": "Ofertas aceptada exitosamente"}
