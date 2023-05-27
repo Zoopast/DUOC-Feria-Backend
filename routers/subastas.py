@@ -5,7 +5,7 @@ from db.models.subasta import Subasta
 from db.schemas.subasta import subasta_tuple_to_dict
 from db.schemas.requerimiento import requerimiento_tuple_to_dict
 from datetime import datetime
-
+from db.schemas.producto_requerimiento import producto_tuple_to_dict
 router = APIRouter(
     prefix="/subastas",
     tags=["subastas"],
@@ -13,6 +13,12 @@ router = APIRouter(
 )
 
 cursor, connection = get_cursor()
+
+async def get_produtos_requerimiento(id_requerimiento: int):
+    cursor.execute("SELECT * FROM PRODUCTO_REQUERIMIENTO WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
+    result = cursor.fetchall()
+    connection.commit()
+    return [producto_tuple_to_dict(producto) for producto in result]
 
 @router.get("/activas")
 async def obtener_subastas_activas():
@@ -49,9 +55,11 @@ async def obtener_subasta_info(id_subasta: int):
     
     subasta = subasta_tuple_to_dict(result)
     cursor.execute("SELECT * FROM REQUERIMIENTOS WHERE id_requerimiento = :id_requerimiento", id_requerimiento=subasta["id_requerimiento"])
-    result = cursor.fetchone()
+    requerimiento = cursor.fetchone()
     
-    requerimiento = requerimiento_tuple_to_dict(result)
+    productos = await get_produtos_requerimiento(subasta["id_requerimiento"])
+
+    requerimiento = requerimiento_tuple_to_dict(requerimiento, productos)
     
     connection.commit()
     return {"subasta": subasta, "requerimiento": requerimiento}
