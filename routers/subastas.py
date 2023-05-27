@@ -28,7 +28,7 @@ async def get_ofertas_transporte(id_subasta: int):
     connection.commit()
     return [oferta_tuple_to_dict(oferta) for oferta in result]
 
-@router.get("/activas")
+@router.get("/activas/")
 async def obtener_subastas_activas():
     cursor.execute("SELECT * FROM SUBASTAS WHERE estado = 'activo'")
     result = cursor.fetchall()
