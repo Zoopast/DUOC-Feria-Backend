@@ -56,21 +56,62 @@ async def obtener_subasta(id_subasta: int):
 
 @router.get("/{id_subasta}/info/")
 async def obtener_subasta_info(id_subasta: int):
-    cursor.execute("SELECT * FROM SUBASTAS WHERE id_subasta = :id_subasta", id_subasta=id_subasta)
-    result = cursor.fetchone()
-    if not result:
-        raise HTTPException(status_code=404, detail="Subasta no encontrado")
     
-    subasta = subasta_tuple_to_dict(result)
-    cursor.execute("SELECT * FROM REQUERIMIENTOS WHERE id_requerimiento = :id_requerimiento", id_requerimiento=subasta["id_requerimiento"])
-    requerimiento = cursor.fetchone()
+    subasta_query = """
+    SELECT SUBASTAS.*, USUARIOS.nombre_usuario, USUARIOS.apellidos_usuario
+    FROM SUBASTAS
+    JOIN USUARIOS ON SUBASTAS.id_transportista = USUARIOS.id_usuario
+    WHERE id_subasta = :id_subasta
+    """
+    
+    cursor.execute(subasta_query, id_subasta=id_subasta)
+    subasta = cursor.fetchone()
+    
+    subasta = {
+        "id_subasta" : subasta[0],
+        "id_requerimiento" : subasta[1],
+        "fecha_inicio" : subasta[2],
+        "fecha_fin" : subasta[3],
+        "estado": subasta[4],
+        "transportista": {"id_transportista": subasta[5],  "nombre": subasta[6] + " " + subasta[7] }
+    }
+    
+    print(subasta)
+    
+    requerimiento_query = """
+        SELECT REQUERIMIENTOS.*, USUARIOS.nombre_usuario, USUARIOS.apellidos_usuario
+        FROM REQUERIMIENTOS
+        JOIN USUARIOS ON REQUERIMIENTOS.id_usuario = USUARIOS.id_usuario
+        WHERE REQUERIMIENTOS.id_requerimiento = :id_requerimiento
+    """
+    
+    cursor.execute(requerimiento_query, id_requerimiento=subasta["id_requerimiento"])
+    
+    requerimiento_info = cursor.fetchone()
     
     productos = await get_produtos_requerimiento(subasta["id_requerimiento"])
     ofertas = await get_ofertas_transporte(id_subasta)
-    requerimiento = requerimiento_tuple_to_dict(requerimiento, productos)
     
     connection.commit()
-    return {"subasta": subasta, "requerimiento": requerimiento, "ofertas": ofertas}
+    
+    requerimiento = {
+        "id_requerimiento": requerimiento_info[0],
+        "fecha_inicio": requerimiento_info[1],
+        "fecha_fin": requerimiento_info[2],
+        "calidad": requerimiento_info[3],
+        "estado": requerimiento_info[5],
+        "usuario": {
+            "id_usuario": requerimiento_info[4],
+            "nombre": requerimiento_info[6] + " " + requerimiento_info[7]
+        },
+        "productos": productos
+    }
+    
+    return {
+        "subasta": subasta,
+        "requerimiento": requerimiento,
+        "ofertas": ofertas
+    }
 
 @router.put("/{id_subasta}/finalizar/")
 async def finalizar_subasta(id_subasta: int, id_transportista: int):
