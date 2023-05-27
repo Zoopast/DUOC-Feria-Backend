@@ -54,7 +54,7 @@ async def obtener_subasta_info(id_subasta: int):
     requerimiento = requerimiento_tuple_to_dict(result)
     
     connection.commit()
-    return {"subasta": subasta_tuple_to_dict(result), "requerimiento": requerimiento}
+    return {"subasta": subasta, "requerimiento": requerimiento}
 
 @router.put("/{id_subasta}/finalizar/")
 async def finalizar_subasta(id_subasta: int, id_transportista: int):
