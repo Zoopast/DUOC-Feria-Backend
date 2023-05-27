@@ -7,8 +7,7 @@ from db.models.requerimiento_oferta import RequerimientoOferta
 from db.schemas.requerimiento import requerimiento_tuple_to_dict, requerimiento_oferta_tuple_to_dict
 from db.schemas.user import user_tuple_to_dict
 from db.schemas.producto_requerimiento import producto_tuple_to_dict
-from datetime import datetime
-
+from datetime import datetime, timedelta
 router = APIRouter(
     prefix="/requerimientos",
     tags=["requerimientos"],
@@ -162,5 +161,16 @@ async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
         cursor.execute(update_query, id_requerimiento_oferta=id_oferta)
 
     connection.commit()
+
+    nueva_subasta_query = """
+        INSERT INTO SUBASTAS (id_requerimiento, fecha_inicio, fecha_fin, estado) VALUES
+        (:id_requerimiento, :fecha_inicio, :fecha_fin, :estado)
+    """
+
+    cursor.execute(nueva_subasta_query, 
+                   id_requerimiento=id_requerimiento, 
+                   fecha_inicio = datetime.now().strftime("%d-%b-%Y"),
+                   fecha_fin = (datetime.now() + timedelta(days=7)).strftime("%d-%b-%Y"),
+                   estado="activo")
 
     return {"message": "Ofertas aceptada exitosamente"}

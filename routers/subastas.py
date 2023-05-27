@@ -4,6 +4,7 @@ import cx_Oracle
 from db.models.subasta import Subasta
 from db.schemas.subasta import subasta_tuple_to_dict
 from datetime import datetime
+
 router = APIRouter(
     prefix="/subastas",
     tags=["subastas"],
@@ -11,6 +12,13 @@ router = APIRouter(
 )
 
 cursor, connection = get_cursor()
+
+@router.get("/activas")
+async def obtener_subastas_activas():
+    cursor.execute("SELECT * FROM SUBASTAS WHERE estado = 'activo'")
+    result = cursor.fetchall()
+    connection.commit()
+    return [subasta_tuple_to_dict(subasta) for subasta in result]
 
 @router.get("/")
 async def obtener_subastas():
