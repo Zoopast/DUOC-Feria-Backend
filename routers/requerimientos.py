@@ -136,9 +136,9 @@ async def hacer_oferta(ofertas: List[RequerimientoOferta]):
 
     for oferta in ofertas:
         nueva_oferta = oferta.dict()
-        
         del nueva_oferta["id_requerimiento_oferta"]
-
+        del nueva_oferta["aceptado"]
+        nueva_oferta["precio"] = int(nueva_oferta["precio"])
         insert_query = """
             INSERT INTO REQUERIMIENTO_OFERTA (id_requerimiento, id_producto_requerimiento, id_productor, cantidad, precio)
             VALUES (:id_requerimiento, :id_producto_requerimiento, :id_productor, :cantidad, :precio)
