@@ -51,6 +51,7 @@ async def obtener_requerimiento(id_requerimiento: int):
     if not result:
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
     connection.commit()
+    print([requerimiento_oferta_tuple_to_dict(oferta) for oferta in result])
     return [requerimiento_oferta_tuple_to_dict(oferta) for oferta in result]
 
 @router.post("/")
@@ -149,7 +150,8 @@ async def hacer_oferta(ofertas: List[RequerimientoOferta]):
 
         connection.commit()
 
-        return {"message": "Oferta realizada exitosamente"}
+    
+    return {"message": "Oferta realizada exitosamente"}
     
 @router.put("/{id_requerimiento}/ofertas/aceptar/")
 async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
