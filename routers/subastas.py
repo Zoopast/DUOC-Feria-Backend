@@ -148,8 +148,8 @@ async def finalizar_subasta(id_subasta: int, id_transportista: int):
 @router.post("/ofertas/hacer_oferta/")
 async def hacer_oferta(oferta_transporte: OfertaTransporte):
     oferta_dict = oferta_transporte.dict()
-    oferta_dict["fecha_recoleccion"] = datetime.strptime(oferta_dict["fecha_recoleccion"], "%d/%m/%Y").strftime("%d-%b-%Y")
-    oferta_dict["fecha_entrega"] = datetime.strptime(oferta_dict["fecha_entrega"], "%d/%m/%Y").strftime("%d-%b-%Y")
+    oferta_dict["fecha_recoleccion"] = datetime.strptime(oferta_dict["fecha_recoleccion"], "%d-%m-%Y").strftime("%d-%b-%Y")
+    oferta_dict["fecha_entrega"] = datetime.strptime(oferta_dict["fecha_entrega"], "%d-%m-%Y").strftime("%d-%b-%Y")
 
     del oferta_dict["id_oferta_transporte"]
     insert_query = """
