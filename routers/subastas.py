@@ -71,7 +71,6 @@ async def obtener_subasta_info(id_subasta: int):
         """
         cursor.execute(find_user_query, id_usuario=subasta[5])
         user = cursor.fetchone()
-        print(user)
         subasta = {
             "id_subasta" : subasta[0],
             "id_requerimiento" : subasta[1],
