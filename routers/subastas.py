@@ -58,25 +58,33 @@ async def obtener_subasta(id_subasta: int):
 async def obtener_subasta_info(id_subasta: int):
     
     subasta_query = """
-    SELECT SUBASTAS.*, USUARIOS.nombre_usuario, USUARIOS.apellidos_usuario
-    FROM SUBASTAS
-    JOIN USUARIOS ON SUBASTAS.id_transportista = USUARIOS.id_usuario
+    SELECT * FROM SUBASTAS
     WHERE id_subasta = :id_subasta
     """
     
     cursor.execute(subasta_query, id_subasta=id_subasta)
     subasta = cursor.fetchone()
     
-    subasta = {
-        "id_subasta" : subasta[0],
-        "id_requerimiento" : subasta[1],
-        "fecha_inicio" : subasta[2],
-        "fecha_fin" : subasta[3],
-        "estado": subasta[4],
-        "transportista": {"id_transportista": subasta[5],  "nombre": subasta[6] + " " + subasta[7] }
-    }
-    
     print(subasta)
+
+    if subasta[5]:
+        subasta = {
+            "id_subasta" : subasta[0],
+            "id_requerimiento" : subasta[1],
+            "fecha_inicio" : subasta[2],
+            "fecha_fin" : subasta[3],
+            "estado": subasta[4],
+            "transportista": {"id_transportista": subasta[5],  "nombre": subasta[6] + " " + subasta[7] }
+        }
+    else:
+        subasta = {
+            "id_subasta" : subasta[0],
+            "id_requerimiento" : subasta[1],
+            "fecha_inicio" : subasta[2],
+            "fecha_fin" : subasta[3],
+            "estado": subasta[4],
+            "transportista": None
+        }
     
     requerimiento_query = """
         SELECT REQUERIMIENTOS.*, USUARIOS.nombre_usuario, USUARIOS.apellidos_usuario
