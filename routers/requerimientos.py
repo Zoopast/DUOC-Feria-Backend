@@ -51,7 +51,6 @@ async def obtener_requerimiento(id_requerimiento: int):
     if not result:
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
     connection.commit()
-    print([requerimiento_oferta_tuple_to_dict(oferta) for oferta in result])
     return [requerimiento_oferta_tuple_to_dict(oferta) for oferta in result]
 
 @router.post("/")
