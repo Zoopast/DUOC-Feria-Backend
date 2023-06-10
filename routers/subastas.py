@@ -64,17 +64,21 @@ async def obtener_subasta_info(id_subasta: int):
     
     cursor.execute(subasta_query, id_subasta=id_subasta)
     subasta = cursor.fetchone()
-    
-    print(subasta)
 
     if subasta[5]:
+        find_user_query = """
+            SELECT nombre_usuario, apellidos_usuario FROM USUARIOS WHERE id_usuario = :id_usuario
+        """
+        cursor.execute(find_user_query, id_usuario=subasta[5])
+        user = cursor.fetchone()
+        print(user)
         subasta = {
             "id_subasta" : subasta[0],
             "id_requerimiento" : subasta[1],
             "fecha_inicio" : subasta[2],
             "fecha_fin" : subasta[3],
             "estado": subasta[4],
-            "transportista": {"id_transportista": subasta[5],  "nombre": subasta[6] + " " + subasta[7] }
+            "transportista": {"id_transportista": subasta[5],  "nombre": user[0] + " " + user[1] }
         }
     else:
         subasta = {
