@@ -136,7 +136,7 @@ async def obtener_requerimientos_activos():
     cursor.execute("SELECT * FROM REQUERIMIENTOS WHERE estado = 'activo'")
     result = cursor.fetchall()
     connection.commit()
-    return [requerimiento_tuple_to_dict(requerimiento, await get_produtos_requerimiento(requerimiento[0]), await get_usuario_requerimiento(requerimiento[4])) for requerimiento in result]
+    return [requerimiento_tuple_to_dict(requerimiento, await get_produtos_requerimiento(requerimiento[0]), await get_usuario_requerimiento(requerimiento[3])) for requerimiento in result]
 
 @router.post("/productos/oferta/")
 async def hacer_oferta(ofertas: List[RequerimientoOferta]):
