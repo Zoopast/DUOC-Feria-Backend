@@ -34,7 +34,7 @@ async def obtener_requerimientos():
     cursor.execute("SELECT * FROM REQUERIMIENTOS")
     result = cursor.fetchall()
     connection.commit()
-    return [requerimiento_tuple_to_dict(requerimiento, await get_produtos_requerimiento(requerimiento[0]), await get_usuario_requerimiento(requerimiento[4])) for requerimiento in result]
+    return [requerimiento_tuple_to_dict(requerimiento, await get_produtos_requerimiento(requerimiento[0]), await get_usuario_requerimiento(requerimiento[3])) for requerimiento in result]
 
 @router.get("/{id_requerimiento}")
 async def obtener_requerimiento(id_requerimiento: int):
