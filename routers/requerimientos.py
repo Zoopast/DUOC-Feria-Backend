@@ -65,8 +65,8 @@ async def crear_requerimiento(requerimiento: Requerimiento):
 
 
     insert_query = """
-        INSERT INTO REQUERIMIENTOS (id_usuario, fecha_inicio, fecha_fin, estado, calidad)
-        VALUES (:id_usuario, :fecha_inicio, :fecha_fin, :estado, :calidad)
+        INSERT INTO REQUERIMIENTOS (id_usuario, fecha_inicio, fecha_fin, estado)
+        VALUES (:id_usuario, :fecha_inicio, :fecha_fin, :estado)
         RETURNING id_requerimiento INTO :id_requerimiento
     """
 
@@ -76,8 +76,8 @@ async def crear_requerimiento(requerimiento: Requerimiento):
 
     for producto in requerimiento.productos:
         insert_query = """
-            INSERT INTO PRODUCTO_REQUERIMIENTO (id_requerimiento, nombre, cantidad)
-            VALUES (:id_requerimiento, :nombre, :cantidad)
+            INSERT INTO PRODUCTO_REQUERIMIENTO (id_requerimiento, nombre, cantidad, calidad)
+            VALUES (:id_requerimiento, :nombre, :cantidad, :calidad)
         """
         producto["id_requerimiento"] = int(id_requerimiento.getvalue()[0])
         cursor.execute(insert_query, producto)

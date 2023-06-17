@@ -7,7 +7,6 @@ class Requerimiento(BaseModel):
     fecha_inicio: str
     fecha_fin: str
     estado: str | None = "enviado"
-    calidad: str
     productos: list[object] | None
 
     def check_estado(self):
