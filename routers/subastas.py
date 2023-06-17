@@ -139,7 +139,7 @@ async def finalizar_subasta(id_subasta: int, id_transportista: int):
     id_requerimiento = result[0]
 
     update_requerimiento_query = """
-        UPDATE REQUERIMIENTOS SET estado = 'finalizado' WHERE id_requerimiento = :id_requerimiento"""
+        UPDATE REQUERIMIENTOS SET estado = 'en camino' WHERE id_requerimiento = :id_requerimiento"""
     
     cursor.execute(update_requerimiento_query, id_requerimiento=id_requerimiento)
 
