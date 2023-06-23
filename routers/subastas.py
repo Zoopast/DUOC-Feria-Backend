@@ -98,6 +98,7 @@ async def obtener_subasta_info(id_subasta: int):
     cursor.execute(requerimiento_query, id_requerimiento=subasta["id_requerimiento"])
 
     requerimiento_info = cursor.fetchone()
+    print(requerimiento_info)
     productos = await get_produtos_requerimiento(subasta["id_requerimiento"])
     ofertas = await get_ofertas_transporte(id_subasta)
 
@@ -108,9 +109,10 @@ async def obtener_subasta_info(id_subasta: int):
         "fecha_inicio": requerimiento_info[1],
         "fecha_fin": requerimiento_info[2],
         "estado": requerimiento_info[4],
+        "direccion": requerimiento_info[5],
         "usuario": {
             "id_usuario": requerimiento_info[3],
-            "nombre": requerimiento_info[5] + " " + requerimiento_info[6]
+            "nombre": requerimiento_info[6] + " " + requerimiento_info[7]
         },
         "productos": productos
     }
