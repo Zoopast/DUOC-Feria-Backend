@@ -25,7 +25,6 @@ async def get_usuario_requerimiento(id_usuario: int):
 async def get_produtos_requerimiento(id_requerimiento: int):
     cursor.execute("SELECT * FROM PRODUCTO_REQUERIMIENTO WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
     result = cursor.fetchall()
-    print("producto", result)
     connection.commit()
     return [producto_tuple_to_dict(producto) for producto in result]
 
@@ -40,7 +39,6 @@ async def obtener_requerimientos():
 async def obtener_requerimiento(id_requerimiento: int):
     cursor.execute("SELECT * FROM REQUERIMIENTOS WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
     result = cursor.fetchone()
-    print(result)
     if not result:
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
     connection.commit()
@@ -53,8 +51,16 @@ async def obtener_requerimiento(id_requerimiento: int):
     if not result:
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
 
-    cursor.execute("SELECT * FROM REQUERIMIENTO_OFERTA WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
+    ofertas_query = """
+        SELECT RO.*, U.nombre_usuario, U.apellidos_usuario
+        FROM REQUERIMIENTO_OFERTA RO
+        JOIN USUARIOS U ON RO.id_productor = U.id_usuario
+        WHERE RO.id_requerimiento = :id_requerimiento
+    """
+
+    cursor.execute(ofertas_query, id_requerimiento=id_requerimiento)
     result = cursor.fetchall()
+    print(result)
     if not result:
         return []
     connection.commit()

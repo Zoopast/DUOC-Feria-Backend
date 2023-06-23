@@ -51,17 +51,17 @@ async def obtener_subasta(id_subasta: int):
     if not result:
         raise HTTPException(status_code=404, detail="Subasta no encontrado")
     connection.commit()
-    
+
     return subasta
 
 @router.get("/{id_subasta}/info/")
 async def obtener_subasta_info(id_subasta: int):
-    
+
     subasta_query = """
     SELECT * FROM SUBASTAS
     WHERE id_subasta = :id_subasta
     """
-    
+
     cursor.execute(subasta_query, id_subasta=id_subasta)
     subasta = cursor.fetchone()
 
@@ -88,7 +88,7 @@ async def obtener_subasta_info(id_subasta: int):
             "estado": subasta[4],
             "transportista": None
         }
-    
+
     requerimiento_query = """
         SELECT REQUERIMIENTOS.*, USUARIOS.nombre_usuario, USUARIOS.apellidos_usuario
         FROM REQUERIMIENTOS
@@ -96,14 +96,13 @@ async def obtener_subasta_info(id_subasta: int):
         WHERE REQUERIMIENTOS.id_requerimiento = :id_requerimiento
     """
     cursor.execute(requerimiento_query, id_requerimiento=subasta["id_requerimiento"])
-    
+
     requerimiento_info = cursor.fetchone()
-    print(requerimiento_info)
     productos = await get_produtos_requerimiento(subasta["id_requerimiento"])
     ofertas = await get_ofertas_transporte(id_subasta)
-    
+
     connection.commit()
-    
+
     requerimiento = {
         "id_requerimiento": requerimiento_info[0],
         "fecha_inicio": requerimiento_info[1],
@@ -115,7 +114,7 @@ async def obtener_subasta_info(id_subasta: int):
         },
         "productos": productos
     }
-    
+
     return {
         "subasta": subasta,
         "requerimiento": requerimiento,
@@ -129,7 +128,7 @@ async def finalizar_subasta(id_subasta: int, id_transportista: int):
     """
     cursor.execute(update_query, id_subasta=id_subasta, id_transportista=id_transportista)
     connection.commit()
-    
+
     get_requerimiento_query = """
         SELECT id_requerimiento FROM SUBASTAS WHERE id_subasta = :id_subasta
     """
@@ -140,7 +139,7 @@ async def finalizar_subasta(id_subasta: int, id_transportista: int):
 
     update_requerimiento_query = """
         UPDATE REQUERIMIENTOS SET estado = 'en camino' WHERE id_requerimiento = :id_requerimiento"""
-    
+
     cursor.execute(update_requerimiento_query, id_requerimiento=id_requerimiento)
 
     return {"message": "Subasta finalizada"}
@@ -154,10 +153,10 @@ async def hacer_oferta(oferta_transporte: OfertaTransporte):
 
     del oferta_dict["id_oferta_transporte"]
     insert_query = """
-        INSERT INTO OFERTA_TRANSPORTE (id_subasta, id_transportista, precio, fecha_recoleccion, fecha_entrega) 
+        INSERT INTO OFERTA_TRANSPORTE (id_subasta, id_transportista, precio, fecha_recoleccion, fecha_entrega)
         VALUES (:id_subasta, :id_transportista, :precio, :fecha_recoleccion, :fecha_entrega)
     """
-    cursor.execute(insert_query, 
+    cursor.execute(insert_query,
                    oferta_dict)
     connection.commit()
     return {"message": "Oferta realizada"}

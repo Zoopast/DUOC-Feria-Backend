@@ -17,4 +17,5 @@ def requerimiento_oferta_tuple_to_dict(oferta: tuple):
         "id_productor": oferta[3],
         "cantidad": int(oferta[4]),
         "precio": int(oferta[5]),
+        "productor": oferta[7] + " " + oferta[8]
     }
