@@ -52,7 +52,7 @@ async def obtener_requerimiento(id_requerimiento: int):
     result = cursor.fetchone()
     if not result:
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
-    
+
     cursor.execute("SELECT * FROM REQUERIMIENTO_OFERTA WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
     result = cursor.fetchall()
     if not result:
@@ -64,16 +64,18 @@ async def obtener_requerimiento(id_requerimiento: int):
 async def crear_requerimiento(requerimiento: Requerimiento):
     nuevo_requerimiento = requerimiento.dict()
     nuevo_requerimiento["estado"] = "enviado"
-    nuevo_requerimiento["fecha_inicio"] = datetime.strptime(nuevo_requerimiento["fecha_inicio"], "%d/%m/%Y").strftime("%d-%b-%Y")
-    nuevo_requerimiento["fecha_fin"] = datetime.strptime(nuevo_requerimiento["fecha_fin"], "%d/%m/%Y").strftime("%d-%b-%Y")
-    
+    nuevo_requerimiento["fecha_inicio"] = datetime.strptime(nuevo_requerimiento["fecha_inicio"],
+                                                            "%d/%m/%Y").strftime("%d-%b-%Y")
+    nuevo_requerimiento["fecha_fin"] = datetime.strptime(nuevo_requerimiento["fecha_fin"],
+                                                         "%d/%m/%Y").strftime("%d-%b-%Y")
+
     del nuevo_requerimiento["id_requerimiento"]
     del nuevo_requerimiento["productos"]
 
 
     insert_query = """
-        INSERT INTO REQUERIMIENTOS (id_usuario, fecha_inicio, fecha_fin, estado)
-        VALUES (:id_usuario, :fecha_inicio, :fecha_fin, :estado)
+        INSERT INTO REQUERIMIENTOS (id_usuario, fecha_inicio, fecha_fin, estado, direccion)
+        VALUES (:id_usuario, :fecha_inicio, :fecha_fin, :estado, :direccion)
         RETURNING id_requerimiento INTO :id_requerimiento
     """
 
@@ -156,9 +158,9 @@ async def hacer_oferta(ofertas: List[RequerimientoOferta]):
 
         connection.commit()
 
-    
+
     return {"message": "Oferta realizada exitosamente"}
-    
+
 @router.put("/{id_requerimiento}/ofertas/aceptar/")
 async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
 
@@ -175,10 +177,34 @@ async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
         (:id_requerimiento, :fecha_inicio, :fecha_fin, :estado)
     """
 
-    cursor.execute(nueva_subasta_query, 
-                   id_requerimiento=id_requerimiento, 
+    cursor.execute(nueva_subasta_query,
+                   id_requerimiento=id_requerimiento,
                    fecha_inicio = datetime.now().strftime("%d-%b-%Y"),
                    fecha_fin = (datetime.now() + timedelta(days=7)).strftime("%d-%b-%Y"),
                    estado="activo")
 
     return {"message": "Ofertas aceptada exitosamente"}
+
+@router.delete("/")
+async def eliminar_requerimiento(id_requerimiento: int):
+    delete_query = """
+        DELETE FROM REQUERIMIENTOS WHERE id_requerimiento = :id_requerimiento
+    """
+
+    cursor.execute(delete_query, id_requerimiento=id_requerimiento)
+
+    connection.commit()
+
+    return {"message": "Requerimiento eliminado exitosamente"}
+
+@router.delete("/all/")
+async def eliminar_requerimientos():
+    delete_query = """
+        DELETE FROM REQUERIMIENTOS
+    """
+
+    cursor.execute(delete_query)
+
+    connection.commit()
+
+    return {"message": "Requerimientos eliminados exitosamente"}

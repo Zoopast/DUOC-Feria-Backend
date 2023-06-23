@@ -6,6 +6,7 @@ class Requerimiento(BaseModel):
     id_usuario: int
     fecha_inicio: str
     fecha_fin: str
+    direccion: str
     estado: str | None = "enviado"
     productos: list[object] | None
 

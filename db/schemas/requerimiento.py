@@ -5,6 +5,7 @@ def requerimiento_tuple_to_dict(requerimiento: tuple, productos: list = [], usua
         "fecha_fin": requerimiento[2],
         "usuario": usuario,
 				"estado": requerimiento[4],
+        "direccion": requerimiento[5],
 				"productos": productos,
 		}
 
