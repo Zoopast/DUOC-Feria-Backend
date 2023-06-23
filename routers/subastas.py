@@ -160,6 +160,39 @@ async def obtener_subastas_ganadas(id_transportista: int):
     connection.commit()
     return [subasta_tuple_to_dict(subasta) for subasta in result]
 
+@router.post("/actualizar/envio/recogido/")
+async def actualizar_envio_recogido(id_subasta: int, id_requerimiento: int):
+    update_query = """
+        UPDATE SUBASTAS SET estado = 'en camino' WHERE id_subasta = :id_subasta
+    """
+    cursor.execute(update_query, id_subasta=id_subasta)
+
+    update_requerimiento_query = """
+        UPDATE REQUERIMIENTOS SET estado = 'en camino' WHERE id_requerimiento = :id_requerimiento
+    """
+
+    cursor.execute(update_requerimiento_query, id_requerimiento=id_requerimiento)
+
+    connection.commit()
+    return {"message": "Envío recogido"}
+
+@router.post("/actualizar/envio/entregado/")
+async def actualizar_envio_entregado(id_subasta: int, id_requerimiento: int):
+    update_query = """
+        UPDATE SUBASTAS SET estado = 'entregado' WHERE id_subasta = :id_subasta
+    """
+    cursor.execute(update_query, id_subasta=id_subasta)
+
+    update_requerimiento_query = """
+        UPDATE REQUERIMIENTOS SET estado = 'entregado' WHERE id_requerimiento = :id_requerimiento
+    """
+
+    cursor.execute(update_requerimiento_query, id_requerimiento=id_requerimiento)
+
+    connection.commit()
+    return {"message": "Envío entregado"}
+
+
 @router.post("/ofertas/hacer_oferta/")
 async def hacer_oferta(oferta_transporte: OfertaTransporte):
     oferta_dict = oferta_transporte.dict()
