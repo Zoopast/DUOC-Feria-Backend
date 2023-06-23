@@ -191,6 +191,24 @@ async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
 
     return {"message": "Ofertas aceptada exitosamente"}
 
+@router.put("/{id_requerimiento}/finalizar/")
+async def finalizar_requerimiento(id_requerimiento: int):
+    update_query = """
+        UPDATE REQUERIMIENTOS SET estado = 'finalizado' WHERE id_requerimiento = :id_requerimiento
+    """
+
+    cursor.execute(update_query, id_requerimiento=id_requerimiento)
+
+    update_subasta_query = """
+        UPDATE SUBASTAS SET estado = 'finalizado' WHERE id_requerimiento = :id_requerimiento
+    """
+
+    cursor.execute(update_subasta_query, id_requerimiento=id_requerimiento)
+
+    connection.commit()
+
+    return {"message": "Requerimiento finalizado exitosamente"}
+
 @router.delete("/")
 async def eliminar_requerimiento(id_requerimiento: int):
     delete_query = """
