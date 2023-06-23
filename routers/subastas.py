@@ -23,8 +23,15 @@ async def get_produtos_requerimiento(id_requerimiento: int):
     return [producto_tuple_to_dict(producto) for producto in result]
 
 async def get_ofertas_transporte(id_subasta: int):
-    cursor.execute("SELECT * FROM OFERTA_TRANSPORTE WHERE id_subasta = :id_subasta", id_subasta=id_subasta)
+    ofertas_query = """
+    SELECT OT.*, U.nombre_usuario, U.apellidos_usuario
+    FROM OFERTA_TRANSPORTE OT
+    JOIN USUARIOS U ON OT.id_transportista = U.id_usuario
+    WHERE OT.id_subasta = :id_subasta
+    """
+    cursor.execute(ofertas_query, id_subasta=id_subasta)
     result = cursor.fetchall()
+    print(result)
     connection.commit()
     return [oferta_tuple_to_dict(oferta) for oferta in result]
 
@@ -140,7 +147,7 @@ async def finalizar_subasta(id_subasta: int, id_transportista: int):
     id_requerimiento = result[0]
 
     update_requerimiento_query = """
-        UPDATE REQUERIMIENTOS SET estado = 'en camino' WHERE id_requerimiento = :id_requerimiento"""
+        UPDATE REQUERIMIENTOS SET estado = 'esperando ser recogido' WHERE id_requerimiento = :id_requerimiento"""
 
     cursor.execute(update_requerimiento_query, id_requerimiento=id_requerimiento)
 
