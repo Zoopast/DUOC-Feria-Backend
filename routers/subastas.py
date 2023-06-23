@@ -153,6 +153,12 @@ async def finalizar_subasta(id_subasta: int, id_transportista: int):
 
     return {"message": "Subasta finalizada"}
 
+@router.get("/won/")
+async def obtener_subastas_ganadas(id_transportista: int):
+    cursor.execute("SELECT * FROM SUBASTAS WHERE id_transportista = :id_transportista", id_transportista=id_transportista)
+    result = cursor.fetchall()
+    connection.commit()
+    return [subasta_tuple_to_dict(subasta) for subasta in result]
 
 @router.post("/ofertas/hacer_oferta/")
 async def hacer_oferta(oferta_transporte: OfertaTransporte):
