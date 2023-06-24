@@ -125,3 +125,10 @@ async def get_requerimientos_by_user(current_user: Usuario = Depends(JWTBearer()
     con.execute("SELECT * FROM REQUERIMIENTOS WHERE id_usuario = :id_usuario", {"id_usuario": current_user.id_usuario})
     result = con.fetchall()
     return [requerimiento_tuple_to_dict(user) for user in result]
+
+@router.get("/me/requerimientos/entregados/")
+async def get_requerimientos_entregados_by_user(current_user: Usuario = Depends(JWTBearer())):
+    current_user = await get_current_user(current_user)
+    con.execute("SELECT id_requerimiento FROM REQUERIMIENTOS WHERE id_usuario = :id_usuario AND estado = 'entregado'", {"id_usuario": current_user.id_usuario})
+    result = con.fetchall()
+    return [requerimiento_tuple_to_dict(user) for user in result]
