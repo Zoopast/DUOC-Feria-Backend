@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import users, productos, seguros, productores, comerciantes, requerimientos, subastas
+from routers import users, productos, seguros, productores, comerciantes, requerimientos, subastas, ventas_locales
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -25,7 +25,7 @@ app.include_router(productores.router)
 app.include_router(comerciantes.router)
 app.include_router(requerimientos.router)
 app.include_router(subastas.router)
-
+app.include_router(ventas_locales.router)
 
 @app.get("/")
 async def root():
