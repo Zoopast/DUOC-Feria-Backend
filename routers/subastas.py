@@ -133,7 +133,7 @@ async def obtener_subasta_info(id_subasta: int):
 @router.put("/{id_subasta}/finalizar/")
 async def finalizar_subasta(id_subasta: int, id_transportista: int):
     update_query = """
-        UPDATE SUBASTAS SET estado = 'finalizado', id_transportista = :id_transportista WHERE id_subasta = :id_subasta
+        UPDATE SUBASTAS SET estado = 'en preparación', id_transportista = :id_transportista WHERE id_subasta = :id_subasta
     """
     cursor.execute(update_query, id_subasta=id_subasta, id_transportista=id_transportista)
     connection.commit()
