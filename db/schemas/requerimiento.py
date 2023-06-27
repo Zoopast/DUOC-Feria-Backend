@@ -17,6 +17,6 @@ def requerimiento_oferta_tuple_to_dict(oferta: tuple):
         "id_productor": oferta[3],
         "cantidad": int(oferta[4]),
         "precio": int(oferta[5]),
-        "productor": oferta[7] + " " + oferta[8],
-        "direccion": oferta[9],
+        "productor": oferta[8] + " " + oferta[9],
+        "direccion": oferta[7] if oferta[9] is not None else '',
     }
