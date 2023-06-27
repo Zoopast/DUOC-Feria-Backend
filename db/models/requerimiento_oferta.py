@@ -8,3 +8,8 @@ class RequerimientoOferta(BaseModel):
 	cantidad: int
 	precio: int
 	aceptado: bool | None
+
+
+class Ofertas(BaseModel):
+	direccion: str
+	ofertas: list[RequerimientoOferta]

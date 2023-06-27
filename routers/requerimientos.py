@@ -3,7 +3,7 @@ from db.client import get_cursor
 import cx_Oracle
 from typing import List
 from db.models.requerimiento import Requerimiento
-from db.models.requerimiento_oferta import RequerimientoOferta
+from db.models.requerimiento_oferta import Ofertas
 from db.schemas.requerimiento import requerimiento_tuple_to_dict, requerimiento_oferta_tuple_to_dict
 from db.schemas.user import user_tuple_to_dict
 from db.schemas.producto_requerimiento import producto_tuple_to_dict
@@ -147,24 +147,29 @@ async def obtener_requerimientos_activos():
     return [requerimiento_tuple_to_dict(requerimiento, await get_produtos_requerimiento(requerimiento[0]), await get_usuario_requerimiento(requerimiento[3])) for requerimiento in result]
 
 @router.post("/productos/oferta/")
-async def hacer_oferta(ofertas: List[RequerimientoOferta]):
+async def hacer_oferta(ofertas: Ofertas):
+    direccion = ofertas.direccion
 
-    for oferta in ofertas:
-        nueva_oferta = oferta.dict()
-        del nueva_oferta["id_requerimiento_oferta"]
-        del nueva_oferta["aceptado"]
-        nueva_oferta["precio"] = int(nueva_oferta["precio"])
-        insert_query = """
-            INSERT INTO REQUERIMIENTO_OFERTA (id_requerimiento, id_producto_requerimiento, id_productor, cantidad, precio)
-            VALUES (:id_requerimiento, :id_producto_requerimiento, :id_productor, :cantidad, :precio)
-        """
+    try:
+        for oferta in ofertas.ofertas:
+            nueva_oferta = oferta.dict()
+            del nueva_oferta["id_requerimiento_oferta"]
+            del nueva_oferta["aceptado"]
+            nueva_oferta["precio"] = int(nueva_oferta["precio"])
+            nueva_oferta["direccion"] = direccion
+            insert_query = """
+                INSERT INTO REQUERIMIENTO_OFERTA
+                (id_requerimiento, id_producto_requerimiento, id_productor, cantidad, precio, direccion)
+                VALUES (:id_requerimiento, :id_producto_requerimiento, :id_productor, :cantidad, :precio, :direccion)
+            """
 
-        cursor, connection = get_cursor()
-        cursor.execute(insert_query, **nueva_oferta)
+            cursor, connection = get_cursor()
+            cursor.execute(insert_query, **nueva_oferta)
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail="No se pudo realizar la oferta")
 
-        connection.commit()
-
-
+    connection.commit()
     return {"message": "Oferta realizada exitosamente"}
 
 @router.put("/{id_requerimiento}/ofertas/aceptar/")
