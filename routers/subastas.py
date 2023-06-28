@@ -5,7 +5,7 @@ from db.models.subasta import Subasta
 from db.schemas.subasta import subasta_tuple_to_dict
 from db.schemas.requerimiento import requerimiento_tuple_to_dict
 from datetime import datetime
-from db.schemas.producto_requerimiento import producto_tuple_to_dict
+from db.schemas.producto_requerimiento import producto_tuple_to_dict, producto_subasta_tuple_to_dict
 from db.schemas.oferta_transporte import oferta_tuple_to_dict
 from db.models.oferta_transporte import OfertaTransporte
 router = APIRouter(
@@ -15,6 +15,26 @@ router = APIRouter(
 )
 
 cursor, connection = get_cursor()
+
+def set_direccion(direccion):
+    return {
+        "id_producto_requerimiento": direccion[0],
+        "direccion": direccion[1]
+    }
+
+async def get_direcciones_productos_requerimiento(id_requerimiento: int):
+    query = """
+        SELECT id_producto_requerimiento, direccion FROM REQUERIMIENTO_OFERTA
+        WHERE id_requerimiento = :id_requerimiento AND ACEPTADO = 1
+    """
+
+    cursor.execute(query, id_requerimiento=id_requerimiento)
+    result = cursor.fetchall()
+
+    connection.commit()
+
+    return [set_direccion(direccion) for direccion in result]
+
 
 async def get_produtos_requerimiento(id_requerimiento: int):
     cursor.execute("SELECT * FROM PRODUCTO_REQUERIMIENTO WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
@@ -31,7 +51,6 @@ async def get_ofertas_transporte(id_subasta: int):
     """
     cursor.execute(ofertas_query, id_subasta=id_subasta)
     result = cursor.fetchall()
-    print(result)
     connection.commit()
     return [oferta_tuple_to_dict(oferta) for oferta in result]
 
@@ -105,9 +124,20 @@ async def obtener_subasta_info(id_subasta: int):
     cursor.execute(requerimiento_query, id_requerimiento=subasta["id_requerimiento"])
 
     requerimiento_info = cursor.fetchone()
-    print(requerimiento_info)
     productos = await get_produtos_requerimiento(subasta["id_requerimiento"])
     ofertas = await get_ofertas_transporte(id_subasta)
+    direcciones_productos = await get_direcciones_productos_requerimiento(subasta["id_requerimiento"])
+
+    print(direcciones_productos)
+
+    for producto in productos:
+        producto["direcciones"] = []
+        for direccion_producto in direcciones_productos:
+            print(direccion_producto["id_producto_requerimiento"])
+            if producto["id_producto"] == direccion_producto["id_producto_requerimiento"]:
+                producto["direcciones"].append(direccion_producto["direccion"])
+                break
+    
 
     connection.commit()
 
@@ -123,6 +153,8 @@ async def obtener_subasta_info(id_subasta: int):
         },
         "productos": productos
     }
+
+    print(requerimiento, subasta, ofertas)
 
     return {
         "subasta": subasta,
