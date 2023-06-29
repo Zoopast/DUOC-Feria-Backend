@@ -127,13 +127,9 @@ async def obtener_subasta_info(id_subasta: int):
     productos = await get_produtos_requerimiento(subasta["id_requerimiento"])
     ofertas = await get_ofertas_transporte(id_subasta)
     direcciones_productos = await get_direcciones_productos_requerimiento(subasta["id_requerimiento"])
-
-    print(direcciones_productos)
-
     for producto in productos:
         producto["direcciones"] = []
         for direccion_producto in direcciones_productos:
-            print(direccion_producto["id_producto_requerimiento"])
             if producto["id_producto"] == direccion_producto["id_producto_requerimiento"]:
                 producto["direcciones"].append(direccion_producto["direccion"])
                 break
@@ -153,8 +149,6 @@ async def obtener_subasta_info(id_subasta: int):
         },
         "productos": productos
     }
-
-    print(requerimiento, subasta, ofertas)
 
     return {
         "subasta": subasta,

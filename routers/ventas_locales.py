@@ -5,7 +5,7 @@ from db.client import get_cursor
 from datetime import datetime, timedelta
 cursor, connection = get_cursor()
 router = APIRouter(
-    prefix="/ventas_locales",
+    prefix="/ventas-locales",
     tags=["ventas_locales"],
     # dependencies=[Depends(get_token_header)],
 		responses={404: {"description": "Not found"}},
@@ -38,7 +38,7 @@ async def crear_venta_local(id_productos_rechazados: List[int]):
 											 fecha_fin=(datetime.now() + timedelta(days=3)).strftime("%d-%b-%Y"))
 		
 		connection.commit()
-		return {"ventas_locales": "ventas_locales"}
+		return {"message": "Venta local creada exitosamente"}
 
 @router.get("/{id_venta_local}")
 async def get_venta_local(id_venta_local: int):
@@ -66,3 +66,18 @@ async def get_ventas_locales_activas():
 		result = cursor.fetchall()
 		connection.commit()
 		return [venta_local_tuple_to_dict_schema(venta_local) for venta_local in result]
+
+@router.post('/finalize-past-sales')
+async def finalize_past_sales():
+		get_past_sales_query = """
+		SELECT * FROM VENTAS_LOCALES WHERE fecha_fin < :fecha_actual
+		"""
+		cursor.execute(get_past_sales_query, fecha_actual=datetime.now().strftime("%d-%b-%Y"))
+		result = cursor.fetchall()
+		for venta_local in result:
+				finalize_past_sale_query = """
+				UPDATE VENTAS_LOCALES SET estado = 'finalizado' WHERE id_venta_local = :id_venta_local
+				"""
+				cursor.execute(finalize_past_sale_query, id_venta_local=venta_local[0])
+		connection.commit()
+		return {"message": "Ventas locales finalizadas"}

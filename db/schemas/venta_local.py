@@ -12,6 +12,7 @@ def venta_local_tuple_to_dict_schema(venta_local: tuple) -> list:
         "cantidad": venta_local[9],
         "precio": venta_local[10],
         "aceptado": venta_local[11],
-        "nombre": venta_local[12],
-        "calidad": venta_local[13]
+        "direccion": venta_local[12],
+        "nombre": venta_local[13],
+        "calidad": venta_local[14]
     }

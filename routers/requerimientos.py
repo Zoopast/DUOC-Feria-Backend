@@ -61,7 +61,6 @@ async def obtener_requerimiento(id_requerimiento: int):
 
         cursor.execute(ofertas_query, id_requerimiento=id_requerimiento)
         result = cursor.fetchall()
-        print(result)
         if not result:
             return []
         connection.commit()
