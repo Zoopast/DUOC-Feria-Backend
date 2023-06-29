@@ -14,13 +14,14 @@ router = APIRouter(
 
 @router.get("/")
 async def get_ventas_locales():
-		get_ventas_locales_query = """
-		SELECT VL.*, RO.*, PR.nombre, PR.calidad
-		FROM VENTAS_LOCALES VL
-		INNER JOIN REQUERIMIENTO_OFERTA RO ON VL.id_producto_rechazado = RO.id_requerimiento_oferta
-		INNER JOIN PRODUCTO_REQUERIMIENTO PR ON RO.id_producto_requerimiento = PR.id_producto_requerimiento
+		query = """
+			SELECT VL.*, RO.*, PR.nombre, PR.calidad, P.nombre_usuario, P.apellidos_usuario
+			FROM VENTAS_LOCALES VL
+			INNER JOIN REQUERIMIENTO_OFERTA RO ON VL.id_producto_rechazado = RO.id_requerimiento_oferta
+			INNER JOIN PRODUCTO_REQUERIMIENTO PR ON RO.id_producto_requerimiento = PR.id_producto_requerimiento
+			INNER JOIN USUARIOS P ON RO.id_productor = P.id_usuario
 		"""
-		cursor.execute(get_ventas_locales_query)
+		cursor.execute(query)
 		result = cursor.fetchall()
 		connection.commit()
 		return [venta_local_tuple_to_dict_schema(venta_local) for venta_local in result]
@@ -29,25 +30,26 @@ async def get_ventas_locales():
 async def crear_venta_local(id_productos_rechazados: List[int]):
 		for id_producto_rechazado in id_productos_rechazados:
 				new_venta_local_query = """
-				INSERT INTO VENTAS_LOCALES (id_producto_rechazado, fecha_inicio, fecha_fin) 
+				INSERT INTO VENTAS_LOCALES (id_producto_rechazado, fecha_inicio, fecha_fin)
 				VALUES (:id_producto_rechazado, :fecha_inicio, :fecha_fin)
-				"""            
-				cursor.execute(new_venta_local_query, 
-		   								 id_producto_rechazado=id_producto_rechazado, 
-											 fecha_inicio=datetime.now().strftime("%d-%b-%Y"), 
+				"""
+				cursor.execute(new_venta_local_query,
+		   								 id_producto_rechazado=id_producto_rechazado,
+											 fecha_inicio=datetime.now().strftime("%d-%b-%Y"),
 											 fecha_fin=(datetime.now() + timedelta(days=3)).strftime("%d-%b-%Y"))
-		
+
 		connection.commit()
 		return {"message": "Venta local creada exitosamente"}
 
 @router.get("/{id_venta_local}")
 async def get_venta_local(id_venta_local: int):
-		
+
 		query = """
-			SELECT VL.*, RO.*, PR.nombre, PR.calidad
+			SELECT VL.*, RO.*, PR.nombre, PR.calidad, P.nombre_usuario, P.apellidos_usuario
 			FROM VENTAS_LOCALES VL
 			INNER JOIN REQUERIMIENTO_OFERTA RO ON VL.id_producto_rechazado = RO.id_requerimiento_oferta
 			INNER JOIN PRODUCTO_REQUERIMIENTO PR ON RO.id_producto_requerimiento = PR.id_producto_requerimiento
+			INNER JOIN USUARIOS P ON RO.id_productor = P.id_usuario
 			WHERE id_venta_local = :id_venta_local
 		"""
 
@@ -61,10 +63,11 @@ async def get_venta_local(id_venta_local: int):
 @router.get("/activos/")
 async def get_ventas_locales_activas():
 		get_ventas_locales_activas_query = """
-		SELECT VL.*, RO.*, PR.nombre, PR.calidad
+		SELECT VL.*, RO.*, PR.nombre, PR.calidad, P.nombre_usuario, P.apellidos_usuario
 		FROM VENTAS_LOCALES VL
 		INNER JOIN REQUERIMIENTO_OFERTA RO ON VL.id_producto_rechazado = RO.id_requerimiento_oferta
 		INNER JOIN PRODUCTO_REQUERIMIENTO PR ON RO.id_producto_requerimiento = PR.id_producto_requerimiento
+		INNER JOIN USUARIOS P ON RO.id_productor = P.id_usuario
 		WHERE VL.estado = 'activo' AND VL.fecha_fin >= :fecha_actual
 		"""
 		cursor.execute(get_ventas_locales_activas_query, fecha_actual=datetime.now().strftime("%d-%b-%Y"))
