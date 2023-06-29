@@ -42,11 +42,15 @@ async def crear_venta_local(id_productos_rechazados: List[int]):
 
 @router.get("/{id_venta_local}")
 async def get_venta_local(id_venta_local: int):
-		get_venta_local_query = """
-		SELECT * FROM VENTAS_LOCALES WHERE id_venta_local = :id_venta_local
+		
+		query = """
+		SELECT VL.*, RO.*, PR.nombre, PR.calidad
+		FROM VENTAS_LOCALES VL WHERE id_venta_local = :id_venta_local
+		INNER JOIN REQUERIMIENTO_OFERTA RO ON VL.id_producto_rechazado = RO.id_requerimiento_oferta
+		INNER JOIN PRODUCTO_REQUERIMIENTO PR ON RO.id_producto_requerimiento = PR.id_producto_requerimiento
 		"""
 
-		cursor.execute(get_venta_local_query, id_venta_local=id_venta_local)
+		cursor.execute(query, id_venta_local=id_venta_local)
 		result = cursor.fetchone()
 		if not result:
 				raise HTTPException(status_code=404, detail="Venta local no encontrada")
