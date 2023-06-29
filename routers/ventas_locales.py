@@ -44,10 +44,11 @@ async def crear_venta_local(id_productos_rechazados: List[int]):
 async def get_venta_local(id_venta_local: int):
 		
 		query = """
-		SELECT VL.*, RO.*, PR.nombre, PR.calidad
-		FROM VENTAS_LOCALES VL WHERE id_venta_local = :id_venta_local
-		INNER JOIN REQUERIMIENTO_OFERTA RO ON VL.id_producto_rechazado = RO.id_requerimiento_oferta
-		INNER JOIN PRODUCTO_REQUERIMIENTO PR ON RO.id_producto_requerimiento = PR.id_producto_requerimiento
+			SELECT VL.*, RO.*, PR.nombre, PR.calidad
+			FROM VENTAS_LOCALES VL
+			INNER JOIN REQUERIMIENTO_OFERTA RO ON VL.id_producto_rechazado = RO.id_requerimiento_oferta
+			INNER JOIN PRODUCTO_REQUERIMIENTO PR ON RO.id_producto_requerimiento = PR.id_producto_requerimiento
+			WHERE id_venta_local = :id_venta_local
 		"""
 
 		cursor.execute(query, id_venta_local=id_venta_local)
@@ -55,7 +56,7 @@ async def get_venta_local(id_venta_local: int):
 		if not result:
 				raise HTTPException(status_code=404, detail="Venta local no encontrada")
 		connection.commit()
-		return result
+		return venta_local_tuple_to_dict_schema(result)
 
 @router.get("/activos/")
 async def get_ventas_locales_activas():
