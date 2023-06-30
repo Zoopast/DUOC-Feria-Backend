@@ -34,3 +34,17 @@ async def eliminar_consultor(id_consultor: int):
   con.execute("DELETE FROM USUARIOS WHERE id_usuario = :id_consultor", {"id_usuario": id_consultor})
   connection.commit()
   return { "status": status.HTTP_200_OK, "message": "consultor eliminado"}
+
+@router.get("/sales/all")
+async def obtener_ventas():
+  query = """
+		SELECT id_requerimiento FROM REQUERIMIENTOS
+    WHERE estado = 'finalizado'
+  """
+  try:
+    con.execute(query)
+    result = con.fetchall()
+  except Exception as e:
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+  return [id_requerimiento[0] for id_requerimiento in result]
