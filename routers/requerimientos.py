@@ -8,6 +8,9 @@ from db.schemas.requerimiento import requerimiento_tuple_to_dict, requerimiento_
 from db.schemas.user import user_tuple_to_dict
 from db.schemas.producto_requerimiento import producto_tuple_to_dict
 from datetime import datetime, timedelta
+
+cursor, connection = get_cursor()
+
 router = APIRouter(
     prefix="/requerimientos",
     tags=["requerimientos"],
@@ -123,23 +126,42 @@ async def actualizar_requerimiento(id_requerimiento: int, requerimiento: Requeri
 
     return {"message": "Requerimiento actualizado exitosamente"}
 
+async def create_contrato(id_requerimiento: int, id_cliente: int):
+    try:
+        query = """
+            INSERT INTO CONTRATOS (id_requerimiento, id_cliente)
+            VALUES (:id_requerimiento, :id_cliente)
+        """
+        cursor.execute(query, id_requerimiento=id_requerimiento, id_cliente=id_cliente)
+    except:
+        raise HTTPException(status_code=500, detail="Error al crear contrato")
+
 @router.put("/{id_requerimiento}/estado")
 async def actualizar_estado_requerimiento(id_requerimiento: int, requerimiento: Requerimiento):
-    nuevo_requerimiento = requerimiento.dict()
-    nuevo_requerimiento["id_requerimiento"] = id_requerimiento
-    del nuevo_requerimiento["productos"]
+    try:
+        nuevo_requerimiento = requerimiento.dict()
+        nuevo_requerimiento["id_requerimiento"] = id_requerimiento
+        del nuevo_requerimiento["productos"]
 
-    update_query = """
-        UPDATE REQUERIMIENTOS
-        SET estado = :estado
-        WHERE id_requerimiento = :id_requerimiento
-    """
+        update_query = """
+            UPDATE REQUERIMIENTOS
+            SET estado = :estado
+            WHERE id_requerimiento = :id_requerimiento
+        """
 
-    cursor, connection = get_cursor()
-    cursor.execute(update_query, id_requerimiento=id_requerimiento, estado=requerimiento.estado)
+        cursor.execute(update_query, id_requerimiento=id_requerimiento, estado=requerimiento.estado)
 
-    connection.commit()
+        if requerimiento.estado == "activo":
+            await create_contrato(id_requerimiento, requerimiento.id_usuario)
+        
+        connection.commit()
 
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Error al actualizar estado del requerimiento")
+
+    if requerimiento.estado == "activo":
+        await create_contrato(id_requerimiento, requerimiento.id_usuario)
     return {"message": "Estado del requerimiento actualizado exitosamente"}
 
 @router.get("/activos/")
@@ -175,6 +197,16 @@ async def hacer_oferta(ofertas: Ofertas):
     connection.commit()
     return {"message": "Oferta realizada exitosamente"}
 
+async def create_productor_cliente_contrato(id_cliente, id_productor, id_contrato, id_oferta):
+    try:
+        query = """
+            INSERT INTO PRODUCTOR_CLIENTE_CONTRATOS (id_cliente, id_productor, id_contrato, id_oferta)
+            VALUES (:id_cliente, :id_productor, :id_contrato, :id_oferta)
+        """
+        cursor.execute(query, id_cliente=id_cliente, id_productor=id_productor, id_contrato=id_contrato, id_oferta=id_oferta)
+    except:
+        raise HTTPException(status_code=500, detail="Error al crear contrato")
+
 @router.put("/{id_requerimiento}/ofertas/aceptar/")
 async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
 
@@ -183,6 +215,23 @@ async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
         UPDATE REQUERIMIENTO_OFERTA SET aceptado = 1 WHERE id_requerimiento_oferta = :id_requerimiento_oferta
         """
         cursor.execute(update_query, id_requerimiento_oferta=id_oferta)
+
+        find_contrato_query = """
+            SELECT RO.id_productor, C.id_contrato, C.id_cliente FROM CONTRATOS 
+            INNER JOIN REQUERIMIENTO_OFERTA RO ON RO.id_requerimiento = CONTRATOS.id_requerimiento
+            WHERE id_requerimiento = :id_requerimiento
+        """
+
+        cursor.execute(find_contrato_query, id_requerimiento=id_requerimiento)
+        
+        id_productor = cursor.fetchone()[0]
+        id_contrato = cursor.fetchone()[0]
+        id_cliente = cursor.fetchone()[1]
+        
+        await create_productor_cliente_contrato(id_cliente, id_productor, id_contrato, id_oferta)
+        
+
+
 
     connection.commit()
 
