@@ -1,5 +1,9 @@
 from fastapi import FastAPI
-from routers import users, productos, seguros, productores, comerciantes, requerimientos, subastas, ventas_locales, clientes_locales, transportistas, contratos
+from routers import (users, productos, seguros, productores,
+                     comerciantes, requerimientos, subastas,
+                     ventas_locales, clientes_locales,
+                     clientes_externos, transportistas, contratos,
+                     consultores)
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -29,6 +33,8 @@ app.include_router(ventas_locales.router)
 app.include_router(clientes_locales.router)
 app.include_router(transportistas.router)
 app.include_router(contratos.router)
+app.include_router(clientes_externos.router)
+app.include_router(consultores.router)
 
 @app.get("/")
 async def root():
