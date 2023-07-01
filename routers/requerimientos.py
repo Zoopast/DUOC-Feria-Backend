@@ -17,8 +17,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-cursor, connection = get_cursor()
-
 async def get_usuario_requerimiento(id_usuario: int):
     cursor.execute("SELECT * FROM USUARIOS WHERE id_usuario = :id_usuario", id_usuario=id_usuario)
     result = cursor.fetchone()
@@ -42,13 +40,12 @@ async def obtener_requerimientos():
 async def obtener_requerimiento(id_requerimiento: int):
     cursor.execute("SELECT * FROM REQUERIMIENTOS WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
     result = cursor.fetchone()
-    if not result:
+    if result is None:
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
-    connection.commit()
     return requerimiento_tuple_to_dict(result, await get_produtos_requerimiento(result[0]), await get_usuario_requerimiento(result[3]))
 
 @router.get("/{id_requerimiento}/ofertas/")
-async def obtener_requerimiento(id_requerimiento: int):
+async def obtener_requerimiento_ofertas(id_requerimiento: int):
     try:
         cursor.execute("SELECT * FROM REQUERIMIENTOS WHERE id_requerimiento = :id_requerimiento", id_requerimiento=id_requerimiento)
         result = cursor.fetchone()
@@ -91,7 +88,6 @@ async def crear_requerimiento(requerimiento: Requerimiento):
         RETURNING id_requerimiento INTO :id_requerimiento
     """
 
-    cursor, connection = get_cursor()
     id_requerimiento = cursor.var(cx_Oracle.NUMBER)
     cursor.execute(insert_query, id_requerimiento=id_requerimiento, **nuevo_requerimiento)
 
@@ -159,9 +155,7 @@ async def actualizar_estado_requerimiento(id_requerimiento: int, requerimiento: 
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Error al actualizar estado del requerimiento")
-
-    if requerimiento.estado == "activo":
-        await create_contrato(id_requerimiento, requerimiento.id_usuario)
+    
     return {"message": "Estado del requerimiento actualizado exitosamente"}
 
 @router.get("/activos/")
@@ -207,46 +201,44 @@ async def create_productor_cliente_contrato(id_cliente, id_productor, id_contrat
     except:
         raise HTTPException(status_code=500, detail="Error al crear contrato")
 
-@router.put("/{id_requerimiento}/ofertas/aceptar/")
-async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
+async def create_subasta(id_requerimiento: int):
+    try:
+        nueva_subasta_query = """
+            INSERT INTO SUBASTAS (id_requerimiento, fecha_inicio, fecha_fin, estado) VALUES
+            (:id_requerimiento, :fecha_inicio, :fecha_fin, :estado)
+        """
 
-    for id_oferta in ofertas:
+        cursor.execute(nueva_subasta_query,
+                    id_requerimiento=id_requerimiento,
+                    fecha_inicio = datetime.now().strftime("%d-%b-%Y"),
+                    fecha_fin = (datetime.now() + timedelta(days=7)).strftime("%d-%b-%Y"),
+                    estado="activo")
+        connection.commit()
+    except: 
+        connection.rollback()
+        raise HTTPException(status_code=500, detail="Error al crear subasta")
+
+async def update_ofertas(id_oferta):
+    try:
         update_query = """
         UPDATE REQUERIMIENTO_OFERTA SET aceptado = 1 WHERE id_requerimiento_oferta = :id_requerimiento_oferta
         """
         cursor.execute(update_query, id_requerimiento_oferta=id_oferta)
+        connection.commit()
+    except cx_Oracle.DatabaseError as e:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail="Error al actualizar ofertas")
 
-        find_contrato_query = """
-            SELECT RO.id_productor, C.id_contrato, C.id_cliente FROM CONTRATOS 
-            INNER JOIN REQUERIMIENTO_OFERTA RO ON RO.id_requerimiento = CONTRATOS.id_requerimiento
-            WHERE id_requerimiento = :id_requerimiento
-        """
-
-        cursor.execute(find_contrato_query, id_requerimiento=id_requerimiento)
-        
-        id_productor = cursor.fetchone()[0]
-        id_contrato = cursor.fetchone()[0]
-        id_cliente = cursor.fetchone()[1]
-        
-        await create_productor_cliente_contrato(id_cliente, id_productor, id_contrato, id_oferta)
-        
-
-
-
-    connection.commit()
-
-    nueva_subasta_query = """
-        INSERT INTO SUBASTAS (id_requerimiento, fecha_inicio, fecha_fin, estado) VALUES
-        (:id_requerimiento, :fecha_inicio, :fecha_fin, :estado)
-    """
-
-    cursor.execute(nueva_subasta_query,
-                   id_requerimiento=id_requerimiento,
-                   fecha_inicio = datetime.now().strftime("%d-%b-%Y"),
-                   fecha_fin = (datetime.now() + timedelta(days=7)).strftime("%d-%b-%Y"),
-                   estado="activo")
-
-    return {"message": "Ofertas aceptada exitosamente"}
+@router.put("/{id_requerimiento}/ofertas/aceptar/")
+async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
+    try:
+        for id_oferta in ofertas:
+                await update_ofertas(id_oferta)
+        await create_subasta(id_requerimiento)
+        return {"message": "Ofertas aceptada exitosamente"}
+    except cx_Oracle.DatabaseError:
+        connection.rollback()
+        raise HTTPException(status_code=500, detail="Error al aceptar oferta")
 
 @router.put("/{id_requerimiento}/finalizar/")
 async def finalizar_requerimiento(id_requerimiento: int):
