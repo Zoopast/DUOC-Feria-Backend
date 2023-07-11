@@ -178,11 +178,15 @@ async def hacer_oferta(ofertas: Ofertas):
             nueva_oferta["direccion"] = direccion
 
             # check if there is an offer already
-            cursor.execute("""
+            query = """
                 SELECT id_requerimiento_oferta FROM REQUERIMIENTO_OFERTA
-                WHERE id_requerimiento = :id_requerimiento AND id_productor = :id_productor""",
+                WHERE id_requerimiento = :id_requerimiento AND id_productor = :id_productor AND id_producto_requerimiento = :id_producto_requerimiento"""
+
+            cursor.execute(query,
                            id_requerimiento=int(nueva_oferta["id_requerimiento"]),
-                           id_productor=int(nueva_oferta["id_productor"]))
+                           id_productor=int(nueva_oferta["id_productor"]),
+                           id_producto_requerimiento=int(nueva_oferta["id_producto_requerimiento"]))
+                           
 
             result = cursor.fetchone()
             if result:
