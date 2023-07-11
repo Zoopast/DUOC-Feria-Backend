@@ -178,31 +178,37 @@ async def hacer_oferta(ofertas: Ofertas):
             nueva_oferta["direccion"] = direccion
 
             # check if there is an offer already
+            print(nueva_oferta)
             cursor.execute("""
                 SELECT id_requerimiento_oferta FROM REQUERIMIENTO_OFERTA
                 WHERE id_requerimiento = :id_requerimiento AND id_productor = :id_productor""",
-                           id_requerimiento=nueva_oferta["id_requerimiento"],
-                           id_productor=nueva_oferta["id_productor"])
+                           id_requerimiento=int(nueva_oferta["id_requerimiento"]),
+                           id_productor=int(nueva_oferta["id_productor"]))
 
             result = cursor.fetchone()
             if result:
+                print("Existe oferta")
                 update_query = """
                     UPDATE REQUERIMIENTO_OFERTA
                     SET cantidad = :cantidad, precio = :precio, direccion = :direccion
                     WHERE id_requerimiento = :id_requerimiento AND id_productor = :id_productor
                 """
-
-                cursor.execute(update_query, **nueva_oferta)
+                cursor.execute(update_query, cantidad=int(nueva_oferta["cantidad"]), 
+                               precio=int(nueva_oferta["precio"]), 
+                               direccion=nueva_oferta["direccion"], 
+                               id_requerimiento=int(nueva_oferta["id_requerimiento"]), 
+                               id_productor=int(nueva_oferta["id_productor"]))
+                print("Ofera actualizada")
             else:
             # if there is an offer already, update it
-
                 insert_query = """
                     INSERT INTO REQUERIMIENTO_OFERTA
                     (id_requerimiento, id_producto_requerimiento, id_productor, cantidad, precio, direccion)
                     VALUES (:id_requerimiento, :id_producto_requerimiento, :id_productor, :cantidad, :precio, :direccion)
                 """
                 cursor.execute(insert_query, **nueva_oferta)
-
+                print("oferta creada")
+        print("aqui si 5")
         connection.commit()
         return {"message": "Oferta realizada exitosamente"}
     except Exception as e:
