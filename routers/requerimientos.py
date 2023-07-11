@@ -149,13 +149,13 @@ async def actualizar_estado_requerimiento(id_requerimiento: int, requerimiento: 
 
         if requerimiento.estado == "activo":
             await create_contrato(id_requerimiento, requerimiento.id_usuario)
-        
+
         connection.commit()
 
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Error al actualizar estado del requerimiento")
-    
+
     return {"message": "Estado del requerimiento actualizado exitosamente"}
 
 @router.get("/activos/")
@@ -181,15 +181,13 @@ async def hacer_oferta(ofertas: Ofertas):
                 (id_requerimiento, id_producto_requerimiento, id_productor, cantidad, precio, direccion)
                 VALUES (:id_requerimiento, :id_producto_requerimiento, :id_productor, :cantidad, :precio, :direccion)
             """
-
-            cursor, connection = get_cursor()
             cursor.execute(insert_query, **nueva_oferta)
+
+        connection.commit()
+        return {"message": "Oferta realizada exitosamente"}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail="No se pudo realizar la oferta")
-
-    connection.commit()
-    return {"message": "Oferta realizada exitosamente"}
 
 async def create_productor_cliente_contrato(id_cliente, id_productor, id_contrato, id_oferta):
     try:
@@ -198,6 +196,7 @@ async def create_productor_cliente_contrato(id_cliente, id_productor, id_contrat
             VALUES (:id_cliente, :id_productor, :id_contrato, :id_oferta)
         """
         cursor.execute(query, id_cliente=id_cliente, id_productor=id_productor, id_contrato=id_contrato, id_oferta=id_oferta)
+        connection.commit()
     except:
         raise HTTPException(status_code=500, detail="Error al crear contrato")
 
@@ -214,7 +213,7 @@ async def create_subasta(id_requerimiento: int):
                     fecha_fin = (datetime.now() + timedelta(days=7)).strftime("%d-%b-%Y"),
                     estado="activo")
         connection.commit()
-    except: 
+    except:
         connection.rollback()
         raise HTTPException(status_code=500, detail="Error al crear subasta")
 
@@ -242,42 +241,54 @@ async def aceptar_oferta(id_requerimiento: int, ofertas: List[int]):
 
 @router.put("/{id_requerimiento}/finalizar/")
 async def finalizar_requerimiento(id_requerimiento: int):
-    update_query = """
-        UPDATE REQUERIMIENTOS SET estado = 'finalizado' WHERE id_requerimiento = :id_requerimiento
-    """
+    try:
+        update_query = """
+            UPDATE REQUERIMIENTOS SET estado = 'finalizado' WHERE id_requerimiento = :id_requerimiento
+        """
 
-    cursor.execute(update_query, id_requerimiento=id_requerimiento)
+        cursor.execute(update_query, id_requerimiento=id_requerimiento)
 
-    update_subasta_query = """
-        UPDATE SUBASTAS SET estado = 'finalizado' WHERE id_requerimiento = :id_requerimiento
-    """
+        update_subasta_query = """
+            UPDATE SUBASTAS SET estado = 'finalizado' WHERE id_requerimiento = :id_requerimiento
+        """
 
-    cursor.execute(update_subasta_query, id_requerimiento=id_requerimiento)
+        cursor.execute(update_subasta_query, id_requerimiento=id_requerimiento)
 
-    connection.commit()
+        connection.commit()
 
-    return {"message": "Requerimiento finalizado exitosamente"}
+        return {"message": "Requerimiento finalizado exitosamente"}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Error al finalizar requerimiento")
 
 @router.delete("/")
 async def eliminar_requerimiento(id_requerimiento: int):
-    delete_query = """
-        DELETE FROM REQUERIMIENTOS WHERE id_requerimiento = :id_requerimiento
-    """
+    try:
+        delete_query = """
+            DELETE FROM REQUERIMIENTOS WHERE id_requerimiento = :id_requerimiento
+        """
 
-    cursor.execute(delete_query, id_requerimiento=id_requerimiento)
+        cursor.execute(delete_query, id_requerimiento=id_requerimiento)
 
-    connection.commit()
+        connection.commit()
 
-    return {"message": "Requerimiento eliminado exitosamente"}
+        return {"message": "Requerimiento eliminado exitosamente"}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Error al eliminar requerimiento")
 
 @router.delete("/all/")
 async def eliminar_requerimientos():
-    delete_query = """
-        DELETE FROM REQUERIMIENTOS
-    """
+    try:
+        delete_query = """
+            DELETE FROM REQUERIMIENTOS
+        """
 
-    cursor.execute(delete_query)
+        cursor.execute(delete_query)
 
-    connection.commit()
+        connection.commit()
 
-    return {"message": "Requerimientos eliminados exitosamente"}
+        return {"message": "Requerimientos eliminados exitosamente"}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Error al eliminar requerimientos")
