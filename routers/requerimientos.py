@@ -176,12 +176,32 @@ async def hacer_oferta(ofertas: Ofertas):
             del nueva_oferta["aceptado"]
             nueva_oferta["precio"] = int(nueva_oferta["precio"])
             nueva_oferta["direccion"] = direccion
-            insert_query = """
-                INSERT INTO REQUERIMIENTO_OFERTA
-                (id_requerimiento, id_producto_requerimiento, id_productor, cantidad, precio, direccion)
-                VALUES (:id_requerimiento, :id_producto_requerimiento, :id_productor, :cantidad, :precio, :direccion)
-            """
-            cursor.execute(insert_query, **nueva_oferta)
+
+            # check if there is an offer already
+            cursor.execute("""
+                SELECT id_requerimiento_oferta FROM REQUERIMIENTO_OFERTA
+                WHERE id_requerimiento = :id_requerimiento AND id_productor = :id_productor""",
+                           id_requerimiento=nueva_oferta["id_requerimiento"],
+                           id_productor=nueva_oferta["id_productor"])
+
+            result = cursor.fetchone()
+            if result:
+                update_query = """
+                    UPDATE REQUERIMIENTO_OFERTA
+                    SET cantidad = :cantidad, precio = :precio, direccion = :direccion
+                    WHERE id_requerimiento = :id_requerimiento AND id_productor = :id_productor
+                """
+
+                cursor.execute(update_query, **nueva_oferta)
+            else:
+            # if there is an offer already, update it
+
+                insert_query = """
+                    INSERT INTO REQUERIMIENTO_OFERTA
+                    (id_requerimiento, id_producto_requerimiento, id_productor, cantidad, precio, direccion)
+                    VALUES (:id_requerimiento, :id_producto_requerimiento, :id_productor, :cantidad, :precio, :direccion)
+                """
+                cursor.execute(insert_query, **nueva_oferta)
 
         connection.commit()
         return {"message": "Oferta realizada exitosamente"}
